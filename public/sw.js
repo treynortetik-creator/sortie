@@ -1,11 +1,14 @@
-const CACHE_NAME = 'sortie-v1';
+const CACHE_NAME = 'sortie-v2';
 const STATIC_ASSETS = [
   '/',
   '/login',
   '/capture',
   '/captures',
+  '/event-select',
   '/settings',
   '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -35,7 +38,8 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(request).then((cached) => {
-      const fetched = fetch(request)
+      // Stale-while-revalidate: serve cache immediately, update in background
+      const networkFetch = fetch(request)
         .then((response) => {
           if (response.ok) {
             const clone = response.clone();
@@ -43,9 +47,17 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => cached);
+        .catch(() => {
+          // Network failed — return cached response if we have one
+          if (cached) return cached;
+          // For navigation requests, try to serve the root page as fallback
+          if (request.mode === 'navigate') {
+            return caches.match('/');
+          }
+          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+        });
 
-      return cached || fetched;
+      return cached || networkFetch;
     })
   );
 });
