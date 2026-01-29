@@ -6,7 +6,16 @@ interface WhisperResponse {
 
 export async function POST(request: Request) {
   try {
-    const { audioUrl }: { audioUrl: string } = await request.json();
+    const body: unknown = await request.json();
+
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { error: "Request body must be a JSON object" },
+        { status: 400 }
+      );
+    }
+
+    const { audioUrl } = body as { audioUrl: string };
 
     if (!audioUrl || typeof audioUrl !== 'string' || (!audioUrl.startsWith('http://') && !audioUrl.startsWith('https://'))) {
       return NextResponse.json(

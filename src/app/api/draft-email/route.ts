@@ -19,11 +19,20 @@ interface AnthropicMessagesResponse {
 
 export async function POST(request: Request) {
   try {
-    const { name, company, email, notes, eventName }: DraftEmailRequest = await request.json();
+    const body: unknown = await request.json();
+
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { error: "Request body must be a JSON object" },
+        { status: 400 }
+      );
+    }
+
+    const { name, company, email, notes, eventName } = body as DraftEmailRequest;
 
     if (!name || typeof name !== 'string' || !name.trim()) {
       return NextResponse.json(
-        { error: "name is required" },
+        { error: "name is required and must be a non-empty string" },
         { status: 400 }
       );
     }
