@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEvent } from '@/contexts/EventContext';
@@ -8,11 +8,10 @@ import { db } from '@/lib/db';
 
 export default function EventSelectPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { eventHistory, setCurrentEvent } = useEvent();
   const [eventName, setEventName] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [filteredEvents, setFilteredEvents] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -22,15 +21,13 @@ export default function EventSelectPage() {
     }
   }, [user, router]);
 
-  useEffect(() => {
+  const filteredEvents = useMemo(() => {
     if (eventName.trim()) {
-      const filtered = eventHistory.filter((ev) =>
+      return eventHistory.filter((ev) =>
         ev.toLowerCase().includes(eventName.toLowerCase())
       );
-      setFilteredEvents(filtered);
-    } else {
-      setFilteredEvents(eventHistory);
     }
+    return eventHistory;
   }, [eventName, eventHistory]);
 
   useEffect(() => {
@@ -73,6 +70,14 @@ export default function EventSelectPage() {
     inputRef.current?.focus();
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
+        <p className="text-[#8b956d]">Loading...</p>
+      </div>
+    );
+  }
+
   if (!user) return null;
 
   return (
@@ -99,6 +104,7 @@ export default function EventSelectPage() {
               ref={inputRef}
               id="event-name"
               type="text"
+              aria-label="Event name"
               value={eventName}
               onChange={(e) => {
                 setEventName(e.target.value);
@@ -108,19 +114,23 @@ export default function EventSelectPage() {
               className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-4 py-3 text-[#c8d5a3] placeholder-[#8b956d]/50 focus:outline-none focus:border-[#4a5d23] focus:ring-1 focus:ring-[#4a5d23] transition-colors"
               placeholder="e.g. CES 2026, AWS re:Invent"
               autoComplete="off"
+              enterKeyHint="go"
             />
 
             {showDropdown && filteredEvents.length > 0 && (
               <div
                 ref={dropdownRef}
+                role="listbox"
                 className="absolute z-10 mt-1 w-full bg-[#2d331f] border border-[#3d4a2a] rounded-lg shadow-xl max-h-48 overflow-y-auto"
               >
                 {filteredEvents.map((ev) => (
                   <button
                     key={ev}
                     type="button"
+                    role="option"
+                    aria-selected={eventName === ev}
                     onClick={() => selectEvent(ev)}
-                    className="w-full text-left px-4 py-3 text-[#c8d5a3] hover:bg-[#4a5d23]/30 transition-colors border-b border-[#3d4a2a] last:border-b-0"
+                    className="w-full text-left px-4 py-3.5 text-[#c8d5a3] hover:bg-[#4a5d23]/30 transition-colors border-b border-[#3d4a2a] last:border-b-0"
                   >
                     {ev}
                   </button>
@@ -132,7 +142,7 @@ export default function EventSelectPage() {
           <button
             onClick={handleBeginMission}
             disabled={!eventName.trim()}
-            className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-40 disabled:cursor-not-allowed text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
+            className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-40 disabled:cursor-not-allowed text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3.5 rounded transition-colors active:scale-[0.98]"
           >
             Begin Mission
           </button>
@@ -143,7 +153,7 @@ export default function EventSelectPage() {
             <p className="text-[#8b956d] text-xs uppercase tracking-wider mb-3">
               Recent Missions
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {eventHistory.slice(0, 5).map((ev) => (
                 <button
                   key={ev}
@@ -151,7 +161,7 @@ export default function EventSelectPage() {
                     setEventName(ev);
                     setShowDropdown(false);
                   }}
-                  className="bg-[#2d331f] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] hover:border-[#4a5d23] text-sm px-3 py-1.5 rounded transition-colors"
+                  className="bg-[#2d331f] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] hover:border-[#4a5d23] text-sm px-4 py-2.5 rounded transition-colors active:scale-95"
                 >
                   {ev}
                 </button>
