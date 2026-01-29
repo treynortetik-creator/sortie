@@ -1,0 +1,71 @@
+'use client';
+
+import { useMemo } from 'react';
+import Link from 'next/link';
+import { LocalCapture } from '@/lib/db';
+import StatusBadge from './StatusBadge';
+
+interface CaptureCardProps {
+  capture: LocalCapture;
+}
+
+export default function CaptureCard({ capture }: CaptureCardProps) {
+  const thumbnailUrl = useMemo(() => {
+    if (capture.imageBlob) {
+      return URL.createObjectURL(capture.imageBlob);
+    }
+    return null;
+  }, [capture.imageBlob]);
+
+  const formattedTime = useMemo(() => {
+    const date = new Date(capture.createdAt);
+    return date.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }, [capture.createdAt]);
+
+  return (
+    <Link href={`/captures/${capture.id}`} className="block">
+      <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg overflow-hidden hover:border-[#4a5d23] transition-colors">
+        <div className="flex gap-3 p-3">
+          {thumbnailUrl ? (
+            <div className="w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-[#1a1f16]">
+              <img
+                src={thumbnailUrl}
+                alt="Capture thumbnail"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-16 h-16 flex-shrink-0 rounded bg-[#1a1f16] flex items-center justify-center">
+              <span className="text-[#8b956d] text-2xl">📷</span>
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                {capture.name && (
+                  <p className="text-[#c8d5a3] font-medium text-sm truncate">
+                    {capture.name}
+                  </p>
+                )}
+                {capture.event && (
+                  <p className="text-[#8b956d] text-xs truncate">
+                    {capture.event}
+                  </p>
+                )}
+              </div>
+              <StatusBadge status={capture.status} />
+            </div>
+
+            <p className="text-[#8b956d] text-xs mt-1">{formattedTime}</p>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
