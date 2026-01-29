@@ -88,9 +88,9 @@ export default function CapturesPage() {
   return (
     <div className="min-h-screen bg-[#1a1f16]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1a1f16] border-b border-[#3d4a2a] px-4 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-[#c8d5a3] tracking-wide">
+      <div className="sticky top-0 z-10 bg-[#1a1f16] border-b border-[#3d4a2a] px-4 py-3">
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-lg font-bold text-[#c8d5a3] tracking-wide">
             All Captures
           </h1>
           <span className="text-[#8b956d] text-sm">
@@ -103,7 +103,7 @@ export default function CapturesPage() {
             value={filterEvent}
             onChange={(e) => setFilterEvent(e.target.value)}
             aria-label="Filter by event"
-            className="flex-1 bg-[#2d331f] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+            className="flex-1 bg-[#2d331f] border border-[#3d4a2a] rounded-lg px-4 py-3 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
           >
             <option value="all">All Events</option>
             {events.map((ev) => (
@@ -118,7 +118,7 @@ export default function CapturesPage() {
               onClick={handleProcessAll}
               disabled={processing}
               aria-label="Process all unsynced captures"
-              className="bg-[#e8c547]/20 text-[#e8c547] text-xs uppercase tracking-wider font-semibold px-4 py-2 rounded hover:bg-[#e8c547]/30 disabled:opacity-50 transition-colors whitespace-nowrap"
+              className="bg-[#e8c547]/20 text-[#e8c547] text-xs uppercase tracking-wider font-semibold px-4 py-3 rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap active:scale-95"
             >
               {processing ? 'Processing...' : 'Process All'}
             </button>
@@ -127,7 +127,7 @@ export default function CapturesPage() {
       </div>
 
       {/* Capture List */}
-      <div className="px-4 py-4 space-y-3 pb-20">
+      <div className="px-4 py-3 space-y-3 scroll-container" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         {captures.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-[#8b956d] text-lg mb-2">No captures yet</p>
