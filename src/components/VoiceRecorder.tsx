@@ -203,52 +203,63 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
   }
 
   return (
-    <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-6">
-      {/* Recording indicator and timer */}
-      <div className="flex items-center justify-center gap-3 mb-4">
+    <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-xl p-5">
+      {/* Large stop button with pulsing ring */}
+      <div className="flex justify-center mb-5">
+        <button
+          onClick={stopRecording}
+          disabled={!isRecording}
+          aria-label="Stop recording"
+          className="relative w-[80px] h-[80px] rounded-full flex items-center justify-center disabled:opacity-50 active:scale-90 transition-transform"
+        >
+          {/* Pulsing ring */}
+          {isRecording && (
+            <span className="absolute inset-0 rounded-full border-[3px] border-red-500 animate-pulse-recording" />
+          )}
+          {/* Outer ring */}
+          <span className="absolute inset-1 rounded-full border-[4px] border-red-500" />
+          {/* Stop square */}
+          <span className="w-[28px] h-[28px] rounded-sm bg-red-500" />
+        </button>
+      </div>
+
+      {/* Timer */}
+      <div className="flex items-center justify-center gap-2 mb-3">
         {isRecording && (
-          <span className="relative flex h-3 w-3">
+          <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
           </span>
         )}
-        <span className="text-[#c8d5a3] text-2xl font-mono font-bold tabular-nums">
+        <span className="text-[#c8d5a3] text-3xl font-mono font-bold tabular-nums">
           {formatTime(elapsed)}
         </span>
-        <span className="text-[#8b956d] text-xs">/ {formatTime(MAX_DURATION)}</span>
+        <span className="text-[#8b956d] text-sm">/ {formatTime(MAX_DURATION)}</span>
       </div>
 
       {/* Progress bar */}
-      <div className="w-full bg-[#1a1f16] rounded-full h-1.5 mb-4">
+      <div className="w-full bg-[#1a1f16] rounded-full h-2 mb-4">
         <div
-          className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
+          className="bg-red-500 h-2 rounded-full transition-all duration-300"
           style={{ width: `${(elapsed / MAX_DURATION) * 100}%` }}
         />
       </div>
 
       {/* Live transcription */}
       {transcription && (
-        <div className="mb-4 p-3 bg-[#1a1f16] rounded border border-[#3d4a2a] max-h-24 overflow-y-auto">
+        <div className="mb-4 p-3 bg-[#1a1f16] rounded-lg border border-[#3d4a2a] max-h-24 overflow-y-auto scroll-container">
           <p className="text-[#c8d5a3] text-sm leading-relaxed">{transcription}</p>
         </div>
       )}
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-4">
+      {/* Cancel */}
+      <div className="flex justify-center">
         <button
           onClick={handleCancel}
           aria-label="Cancel recording"
-          className="px-5 py-2.5 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] rounded-lg text-sm font-medium hover:text-[#c8d5a3] hover:border-[#4a5d23] transition-colors"
+          className="px-6 py-3 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] rounded-lg text-sm font-medium active:scale-95 transition-transform"
         >
           Cancel
-        </button>
-        <button
-          onClick={stopRecording}
-          disabled={!isRecording}
-          aria-label="Stop recording"
-          className="px-5 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          Stop Recording
         </button>
       </div>
     </div>
