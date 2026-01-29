@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/db';
+import BottomNav from '@/components/BottomNav';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [cleared, setCleared] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -79,12 +81,23 @@ export default function SettingsPage() {
         if (savedEvent) setDefaultEvent(savedEvent.value);
       } catch (err) {
         console.error('Failed to load settings:', err);
+      } finally {
+        setLoading(false);
       }
     };
     loadSettings();
   }, []);
 
   if (!user) return null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
+        <p className="text-[#8b956d]">Loading settings...</p>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#1a1f16]">
@@ -95,7 +108,7 @@ export default function SettingsPage() {
         </h1>
       </div>
 
-      <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
+      <div className="px-4 py-6 space-y-5 max-w-lg mx-auto pb-24">
         {/* Profile */}
         <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-4 space-y-4">
           <h2 className="text-[#e8c547] text-xs uppercase tracking-wider font-semibold">
@@ -103,23 +116,26 @@ export default function SettingsPage() {
           </h2>
 
           <div>
-            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-1">
+            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-2">
               Display Name
             </label>
             <input
               type="text"
+              aria-label="Display name"
+              autoComplete="name"
+              enterKeyHint="done"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded-lg px-4 py-3 text-[#c8d5a3] text-base focus:outline-none focus:border-[#4a5d23]"
               placeholder="Your name"
             />
           </div>
 
           <div>
-            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-1">
+            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-2">
               Email
             </label>
-            <p className="text-[#8b956d] text-sm px-3 py-2">
+            <p className="text-[#8b956d] text-base px-4 py-3">
               {user.email || 'Not set'}
             </p>
           </div>
@@ -132,14 +148,17 @@ export default function SettingsPage() {
           </h2>
 
           <div>
-            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-1">
+            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-2">
               Default Event
             </label>
             <input
               type="text"
+              aria-label="Default event"
+              autoComplete="off"
+              enterKeyHint="done"
               value={defaultEvent}
               onChange={(e) => setDefaultEvent(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded-lg px-4 py-3 text-[#c8d5a3] text-base focus:outline-none focus:border-[#4a5d23]"
               placeholder="e.g. CES 2026"
             />
           </div>
@@ -149,7 +168,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-50 text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
+          className="w-full bg-[#4a5d23] hover:bg-[#5a7028] active:bg-[#3d4d1b] disabled:opacity-50 text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3.5 rounded-lg transition-colors"
         >
           {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
         </button>
@@ -162,7 +181,7 @@ export default function SettingsPage() {
 
           <button
             onClick={handleSignOut}
-            className="w-full bg-[#1a1f16] border border-[#3d4a2a] text-[#c8d5a3] hover:bg-red-900/30 hover:border-red-700/50 hover:text-red-300 text-sm py-2.5 rounded transition-colors"
+            className="w-full bg-[#1a1f16] border border-[#3d4a2a] text-[#c8d5a3] hover:bg-red-900/30 hover:border-red-700/50 hover:text-red-300 active:bg-red-900/40 text-sm py-3 rounded-lg transition-colors"
           >
             Sign Out
           </button>
@@ -177,7 +196,7 @@ export default function SettingsPage() {
           <button
             onClick={handleClearData}
             disabled={clearing}
-            className="w-full bg-red-900/20 border border-red-700/30 text-red-400 hover:bg-red-900/40 disabled:opacity-50 text-sm py-2.5 rounded transition-colors"
+            className="w-full bg-red-900/20 border border-red-700/30 text-red-400 hover:bg-red-900/40 active:bg-red-900/50 disabled:opacity-50 text-sm py-3 rounded-lg transition-colors"
           >
             {clearing ? 'Clearing...' : cleared ? 'Data Cleared' : 'Clear Local Data'}
           </button>
@@ -199,6 +218,8 @@ export default function SettingsPage() {
           </p>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
