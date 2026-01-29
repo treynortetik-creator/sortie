@@ -189,10 +189,11 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
 
   if (error) {
     return (
-      <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-6 text-center">
+      <div role="alert" className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-6 text-center">
         <p className="text-red-400 text-sm mb-4">{error}</p>
         <button
           onClick={onCancel}
+          aria-label="Cancel recording"
           className="px-4 py-2 bg-[#1a1f16] border border-[#3d4a2a] text-[#c8d5a3] rounded-lg text-sm hover:bg-[#2d331f] transition-colors"
         >
           Cancel
@@ -236,6 +237,7 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
       <div className="flex items-center justify-center gap-4">
         <button
           onClick={handleCancel}
+          aria-label="Cancel recording"
           className="px-5 py-2.5 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] rounded-lg text-sm font-medium hover:text-[#c8d5a3] hover:border-[#4a5d23] transition-colors"
         >
           Cancel
@@ -243,6 +245,7 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
         <button
           onClick={stopRecording}
           disabled={!isRecording}
+          aria-label="Stop recording"
           className="px-5 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
         >
           Stop Recording

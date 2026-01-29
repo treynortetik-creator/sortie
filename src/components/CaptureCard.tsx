@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { LocalCapture } from '@/lib/db';
 import StatusBadge from './StatusBadge';
@@ -10,11 +10,15 @@ interface CaptureCardProps {
 }
 
 export default function CaptureCard({ capture }: CaptureCardProps) {
-  const thumbnailUrl = useMemo(() => {
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+
+  useEffect(() => {
     if (capture.imageBlob) {
-      return URL.createObjectURL(capture.imageBlob);
+      const url = URL.createObjectURL(capture.imageBlob);
+      setThumbnailUrl(url); // eslint-disable-line react-hooks/set-state-in-effect -- syncing blob URL from IndexedDB
+      return () => URL.revokeObjectURL(url);
     }
-    return null;
+    setThumbnailUrl(null); // eslint-disable-line react-hooks/set-state-in-effect -- cleanup
   }, [capture.imageBlob]);
 
   const formattedTime = useMemo(() => {
@@ -28,11 +32,12 @@ export default function CaptureCard({ capture }: CaptureCardProps) {
   }, [capture.createdAt]);
 
   return (
-    <Link href={`/captures/${capture.id}`} className="block">
+    <Link href={`/captures/${capture.id}`} aria-label={`View capture${capture.name ? `: ${capture.name}` : ` ${formattedTime}`}`} className="block">
       <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg overflow-hidden hover:border-[#4a5d23] transition-colors">
         <div className="flex gap-3 p-3">
           {thumbnailUrl ? (
             <div className="w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-[#1a1f16]">
+              {/* eslint-disable-next-line @next/next/no-img-element -- blob URL from IndexedDB */}
               <img
                 src={thumbnailUrl}
                 alt="Capture thumbnail"

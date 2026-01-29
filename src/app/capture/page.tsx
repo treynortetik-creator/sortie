@@ -55,6 +55,8 @@ function QuickNoteModal({
   return (
     <div
       className="fixed inset-0 bg-black/70 z-50 flex items-end justify-center"
+      role="dialog"
+      aria-label="Quick note"
       onClick={handleInteraction}
     >
       <div className="w-full max-w-lg bg-[#2d331f] border-t border-[#3d4a2a] rounded-t-2xl p-6 space-y-4">
@@ -67,6 +69,7 @@ function QuickNoteModal({
             setNotes(e.target.value);
             handleInteraction();
           }}
+          aria-label="Note about this contact"
           placeholder="Add a note about this contact..."
           className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-4 py-3 text-[#c8d5a3] placeholder-[#8b956d]/50 focus:outline-none focus:border-[#4a5d23] focus:ring-1 focus:ring-[#4a5d23]"
           autoFocus
@@ -114,12 +117,14 @@ function QuickNoteModal({
         <div className="flex gap-3 pt-2">
           <button
             onClick={handleSave}
+            aria-label="Save note"
             className="flex-1 bg-[#4a5d23] hover:bg-[#5a7028] text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
           >
             Save
           </button>
           <button
             onClick={handleSkip}
+            aria-label="Skip note"
             className="flex-1 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
           >
             Skip
@@ -342,6 +347,7 @@ export default function CapturePage() {
         {hasCaptured && (
           <button
             onClick={handleProcessAll}
+            aria-label="Process all unsynced captures"
             className="mb-4 bg-[#e8c547]/20 text-[#e8c547] text-xs uppercase tracking-wider font-semibold px-4 py-2 rounded hover:bg-[#e8c547]/30 transition-colors"
           >
             Process All
@@ -364,6 +370,7 @@ export default function CapturePage() {
               <Link
                 key={cap.id}
                 href={`/captures/${cap.id}`}
+                aria-label={`View capture ${cap.id}`}
                 className="flex-shrink-0 relative"
               >
                 <div className="w-16 h-16 rounded border border-[#3d4a2a] overflow-hidden bg-[#2d331f]">

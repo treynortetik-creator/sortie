@@ -117,6 +117,7 @@ export default function CapturesPage() {
             <button
               onClick={handleProcessAll}
               disabled={processing}
+              aria-label="Process all unsynced captures"
               className="bg-[#e8c547]/20 text-[#e8c547] text-xs uppercase tracking-wider font-semibold px-4 py-2 rounded hover:bg-[#e8c547]/30 disabled:opacity-50 transition-colors whitespace-nowrap"
             >
               {processing ? 'Processing...' : 'Process All'}
