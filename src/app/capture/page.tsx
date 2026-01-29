@@ -59,7 +59,7 @@ function QuickNoteModal({
       aria-label="Quick note"
       onClick={handleInteraction}
     >
-      <div className="w-full max-w-lg bg-[#2d331f] border-t border-[#3d4a2a] rounded-t-2xl p-6 space-y-4">
+      <div className="w-full max-w-lg bg-[#2d331f] border-t border-[#3d4a2a] rounded-t-2xl p-6 space-y-4" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
         <h3 className="text-[#c8d5a3] font-semibold text-lg">Quick Note</h3>
 
         <input
@@ -73,6 +73,7 @@ function QuickNoteModal({
           placeholder="Add a note about this contact..."
           className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-4 py-3 text-[#c8d5a3] placeholder-[#8b956d]/50 focus:outline-none focus:border-[#4a5d23] focus:ring-1 focus:ring-[#4a5d23]"
           autoFocus
+          enterKeyHint="done"
         />
 
         <div className="flex items-center gap-3">
@@ -164,7 +165,11 @@ export default function CapturePage() {
     const startCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
         });
         streamRef.current = stream;
         if (videoRef.current) {
@@ -296,29 +301,29 @@ export default function CapturePage() {
   if (!user || !currentEvent) return null;
 
   return (
-    <div className="min-h-screen bg-[#1a1f16] flex flex-col pb-16">
+    <div className="fixed inset-0 bg-black flex flex-col" style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}>
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#3d4a2a]">
+      {/* Compact Header Overlay */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-gradient-to-b from-black/60 to-transparent" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div>
-          <h1 className="text-[#c8d5a3] font-semibold text-sm">CAPTURE</h1>
-          <p className="text-[#8b956d] text-xs">{currentEvent}</p>
+          <h1 className="text-[#c8d5a3] font-semibold text-xs uppercase tracking-wider">CAPTURE</h1>
+          <p className="text-[#e8c547] text-xs truncate max-w-[200px]">{currentEvent}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <span
             className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}
           />
-          <span className="text-[#8b956d] text-xs">
+          <span className="text-white/70 text-xs">
             {isOnline ? 'Online' : 'Offline'}
           </span>
         </div>
       </div>
 
-      {/* Viewfinder */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
+      {/* Full-screen Viewfinder */}
+      <div className="flex-1 relative overflow-hidden">
         {cameraError ? (
-          <div role="alert" className="w-full aspect-[3/4] max-w-md bg-[#2d331f] border border-[#3d4a2a] rounded-lg flex items-center justify-center p-6">
+          <div role="alert" className="absolute inset-0 bg-[#1a1f16] flex items-center justify-center p-6">
             <p className="text-[#8b956d] text-center text-sm">{cameraError}</p>
           </div>
         ) : (
@@ -327,69 +332,81 @@ export default function CapturePage() {
             autoPlay
             playsInline
             muted
-            className="w-full max-w-md aspect-[3/4] object-cover rounded-lg border border-[#3d4a2a] bg-black"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         )}
+      </div>
 
-        {/* Capture Button */}
-        <div className="mt-6 mb-4">
+      {/* Bottom Controls Overlay */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent" style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}>
+        {/* Recent Captures Strip */}
+        <div className="px-4 pb-3">
+          {captures.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+              {captures.slice(0, 20).map((cap) => (
+                <Link
+                  key={cap.id}
+                  href={`/captures/${cap.id}`}
+                  aria-label={`View capture ${cap.id}`}
+                  className="flex-shrink-0 relative active:scale-95 transition-transform"
+                >
+                  <div className="w-[48px] h-[48px] rounded-lg border-2 border-white/20 overflow-hidden bg-[#2d331f]">
+                    {cap.id && thumbnailUrls[cap.id] && (
+                      /* eslint-disable-next-line @next/next/no-img-element -- blob URL from IndexedDB */
+                      <img
+                        src={thumbnailUrls[cap.id]}
+                        alt="Capture"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
+                    <StatusBadge status={cap.status} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Capture Button + Process All */}
+        <div className="flex items-center justify-center gap-6 pb-4">
+          {/* Process All (left) */}
+          <div className="w-20 flex justify-center">
+            {hasCaptured && (
+              <button
+                onClick={handleProcessAll}
+                aria-label="Process all unsynced captures"
+                className="bg-[#e8c547]/20 text-[#e8c547] text-[10px] uppercase tracking-wider font-semibold px-3 py-2 rounded-lg active:scale-95 transition-transform"
+              >
+                Process
+              </button>
+            )}
+          </div>
+
+          {/* Shutter Button (center) */}
           <button
             aria-label="Take photo"
             onClick={handleCapture}
             disabled={!cameraReady}
-            className="w-20 h-20 rounded-full border-4 border-[#c8d5a3] flex items-center justify-center disabled:opacity-30 transition-transform active:scale-95"
+            className="w-[84px] h-[84px] rounded-full border-[6px] border-white/90 flex items-center justify-center disabled:opacity-30 transition-transform active:scale-90 shadow-lg shadow-black/30"
           >
-            <div className="w-14 h-14 rounded-full bg-[#c8d5a3]" />
+            <div className="w-[64px] h-[64px] rounded-full bg-white" />
           </button>
-        </div>
 
-        {/* Process All */}
-        {hasCaptured && (
-          <button
-            onClick={handleProcessAll}
-            aria-label="Process all unsynced captures"
-            className="mb-4 bg-[#e8c547]/20 text-[#e8c547] text-xs uppercase tracking-wider font-semibold px-4 py-2 rounded hover:bg-[#e8c547]/30 transition-colors"
-          >
-            Process All
-          </button>
-        )}
-      </div>
-
-      {/* Recent Captures */}
-      <div className="border-t border-[#3d4a2a] px-4 py-3">
-        <p className="text-[#8b956d] text-xs uppercase tracking-wider mb-2">
-          Recent Captures
-        </p>
-        {captures.length === 0 ? (
-          <p className="text-[#8b956d]/60 text-xs py-2">
-            No captures yet — take a photo to get started
-          </p>
-        ) : (
-          <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-            {captures.slice(0, 20).map((cap) => (
+          {/* Capture count (right) */}
+          <div className="w-20 flex justify-center">
+            {captures.length > 0 && (
               <Link
-                key={cap.id}
-                href={`/captures/${cap.id}`}
-                aria-label={`View capture ${cap.id}`}
-                className="flex-shrink-0 relative"
+                href="/captures"
+                className="text-white/70 text-xs text-center active:scale-95 transition-transform"
               >
-                <div className="w-16 h-16 rounded border border-[#3d4a2a] overflow-hidden bg-[#2d331f]">
-                  {cap.id && thumbnailUrls[cap.id] && (
-                    /* eslint-disable-next-line @next/next/no-img-element -- blob URL from IndexedDB */
-                    <img
-                      src={thumbnailUrls[cap.id]}
-                      alt="Capture"
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-0.5">
-                  <StatusBadge status={cap.status} />
-                </div>
+                <span className="block text-white text-lg font-bold">{captures.length}</span>
+                <span className="text-[10px] uppercase tracking-wider">Captures</span>
               </Link>
-            ))}
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Quick Note Modal */}
