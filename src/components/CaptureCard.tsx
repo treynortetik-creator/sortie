@@ -18,7 +18,7 @@ export default function CaptureCard({ capture }: CaptureCardProps) {
       setThumbnailUrl(url); // eslint-disable-line react-hooks/set-state-in-effect -- syncing blob URL from IndexedDB
       return () => URL.revokeObjectURL(url);
     }
-    setThumbnailUrl(null); // eslint-disable-line react-hooks/set-state-in-effect -- cleanup
+    setThumbnailUrl(null);
   }, [capture.imageBlob]);
 
   const formattedTime = useMemo(() => {
