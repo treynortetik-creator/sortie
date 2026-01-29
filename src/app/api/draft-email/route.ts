@@ -1,10 +1,27 @@
 import { NextResponse } from "next/server";
 
+interface DraftEmailRequest {
+  name: string;
+  company?: string;
+  email?: string;
+  notes?: string;
+  eventName?: string;
+}
+
+interface AnthropicContentBlock {
+  type: "text" | "tool_use";
+  text?: string;
+}
+
+interface AnthropicMessagesResponse {
+  content: AnthropicContentBlock[];
+}
+
 export async function POST(request: Request) {
   try {
-    const { name, company, email, notes, eventName } = await request.json();
+    const { name, company, email, notes, eventName }: DraftEmailRequest = await request.json();
 
-    if (!name) {
+    if (!name || typeof name !== 'string' || !name.trim()) {
       return NextResponse.json(
         { error: "name is required" },
         { status: 400 }
@@ -59,10 +76,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const data = await response.json();
+    const data: AnthropicMessagesResponse = await response.json();
 
-    const textBlock = data.content?.find(
-      (block: { type: string }) => block.type === "text"
+    const textBlock = data.content.find(
+      (block) => block.type === "text"
     );
     const emailDraft = textBlock?.text ?? "";
 

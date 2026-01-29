@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 
+interface WhisperResponse {
+  text: string;
+}
+
 export async function POST(request: Request) {
   try {
-    const { audioUrl } = await request.json();
+    const { audioUrl }: { audioUrl: string } = await request.json();
 
-    if (!audioUrl) {
+    if (!audioUrl || typeof audioUrl !== 'string' || (!audioUrl.startsWith('http://') && !audioUrl.startsWith('https://'))) {
       return NextResponse.json(
-        { error: "audioUrl is required" },
+        { error: "audioUrl must be a valid HTTP or HTTPS URL" },
         { status: 400 }
       );
     }
@@ -55,7 +59,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const data = await whisperResponse.json();
+    const data: WhisperResponse = await whisperResponse.json();
 
     return NextResponse.json({ transcription: data.text });
   } catch (error) {

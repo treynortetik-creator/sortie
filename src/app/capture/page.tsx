@@ -6,36 +6,11 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEvent } from '@/contexts/EventContext';
 import { useConnection } from '@/contexts/ConnectionContext';
-import { db } from '@/lib/db';
+import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
 import VoiceRecorder from '@/components/VoiceRecorder';
-
-interface Capture {
-  id?: number;
-  userId: string;
-  event: string;
-  imageBlob: Blob;
-  notes?: string;
-  audioBlob?: Blob;
-  status: string;
-  createdAt: string;
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    captured: 'bg-[#e8c547]/20 text-[#e8c547]',
-    processing: 'bg-blue-500/20 text-blue-400',
-    synced: 'bg-green-500/20 text-green-400',
-    error: 'bg-red-500/20 text-red-400',
-  };
-  return (
-    <span
-      className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${colors[status] || colors.captured}`}
-    >
-      {status}
-    </span>
-  );
-}
+import StatusBadge from '@/components/StatusBadge';
+import BottomNav from '@/components/BottomNav';
 
 function QuickNoteModal({
   onSave,
@@ -104,6 +79,7 @@ function QuickNoteModal({
               setShowVoice(!showVoice);
               handleInteraction();
             }}
+            aria-label="Toggle voice recorder"
             className="flex items-center gap-2 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] px-4 py-2 rounded transition-colors"
           >
             <svg
@@ -162,7 +138,7 @@ export default function CapturePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [captures, setCaptures] = useState<Capture[]>([]);
+  const [captures, setCaptures] = useState<LocalCapture[]>([]);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<number, string>>({});
   const [showModal, setShowModal] = useState(false);
   const [lastCaptureId, setLastCaptureId] = useState<number | null>(null);
@@ -226,7 +202,7 @@ export default function CapturePage() {
   }, [user, currentEvent]);
 
   useEffect(() => {
-    loadCaptures();
+    loadCaptures(); // eslint-disable-line react-hooks/set-state-in-effect -- loading data from IndexedDB
   }, [loadCaptures]);
 
   const handleCapture = async () => {
@@ -269,7 +245,7 @@ export default function CapturePage() {
 
   const handleNoteSave = async (notes: string, audioBlob?: Blob) => {
     if (lastCaptureId == null) return;
-    const update: Record<string, unknown> = {};
+    const update: Partial<Pick<LocalCapture, 'notes' | 'audioBlob'>> = {};
     if (notes) update.notes = notes;
     if (audioBlob) update.audioBlob = audioBlob;
     if (Object.keys(update).length > 0) {
@@ -304,7 +280,7 @@ export default function CapturePage() {
   if (!user || !currentEvent) return null;
 
   return (
-    <div className="min-h-screen bg-[#1a1f16] flex flex-col">
+    <div className="min-h-screen bg-[#1a1f16] flex flex-col pb-16">
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Header */}
@@ -326,7 +302,7 @@ export default function CapturePage() {
       {/* Viewfinder */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
         {cameraError ? (
-          <div className="w-full aspect-[3/4] max-w-md bg-[#2d331f] border border-[#3d4a2a] rounded-lg flex items-center justify-center p-6">
+          <div role="alert" className="w-full aspect-[3/4] max-w-md bg-[#2d331f] border border-[#3d4a2a] rounded-lg flex items-center justify-center p-6">
             <p className="text-[#8b956d] text-center text-sm">{cameraError}</p>
           </div>
         ) : (
@@ -342,6 +318,7 @@ export default function CapturePage() {
         {/* Capture Button */}
         <div className="mt-6 mb-4">
           <button
+            aria-label="Take photo"
             onClick={handleCapture}
             disabled={!cameraReady}
             className="w-20 h-20 rounded-full border-4 border-[#c8d5a3] flex items-center justify-center disabled:opacity-30 transition-transform active:scale-95"
@@ -367,7 +344,7 @@ export default function CapturePage() {
           <p className="text-[#8b956d] text-xs uppercase tracking-wider mb-2">
             Recent Captures
           </p>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
             {captures.slice(0, 20).map((cap) => (
               <Link
                 key={cap.id}
@@ -376,6 +353,7 @@ export default function CapturePage() {
               >
                 <div className="w-16 h-16 rounded border border-[#3d4a2a] overflow-hidden bg-[#2d331f]">
                   {cap.id && thumbnailUrls[cap.id] && (
+                    /* eslint-disable-next-line @next/next/no-img-element -- blob URL from IndexedDB */
                     <img
                       src={thumbnailUrls[cap.id]}
                       alt="Capture"
@@ -396,6 +374,8 @@ export default function CapturePage() {
       {showModal && (
         <QuickNoteModal onSave={handleNoteSave} onSkip={handleNoteSkip} />
       )}
+
+      <BottomNav />
     </div>
   );
 }
