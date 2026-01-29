@@ -16,24 +16,34 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
   background-color: var(--color-olive-900);
   color: var(--color-olive-text);
   font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
 }
 
+/* Prevent iOS zoom on input focus — 16px minimum */
 input, textarea, select {
   background-color: var(--color-olive-800);
   color: var(--color-olive-text);
   border: 1px solid var(--color-olive-700);
   border-radius: 4px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem;
   font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem;
   width: 100%;
 }
 
@@ -49,6 +59,28 @@ input::placeholder, textarea::placeholder {
 
 button {
   cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Ensure momentum scrolling on scrollable containers */
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Touch-active feedback for interactive elements */
+button:active, a:active {
+  opacity: 0.85;
+}
+
+/* Safe area padding utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 @keyframes pulse-recording {
