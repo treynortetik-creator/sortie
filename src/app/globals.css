@@ -68,6 +68,18 @@ button {
   letter-spacing: 0.3em;
 }
 
+/* Focus-visible styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px var(--color-gold);
+}
+
 /* Hide scrollbar for capture strip */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
