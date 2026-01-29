@@ -132,7 +132,7 @@ function QuickNoteModal({
 
 export default function CapturePage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { currentEvent } = useEvent();
   const { isOnline } = useConnection();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -277,6 +277,17 @@ export default function CapturePage() {
 
   const hasCaptured = captures.some((c) => c.status === 'captured');
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#3d4a2a] border-t-[#8b956d] rounded-full animate-spin" />
+          <p className="text-[#8b956d] text-sm">Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!user || !currentEvent) return null;
 
   return (
@@ -339,11 +350,15 @@ export default function CapturePage() {
       </div>
 
       {/* Recent Captures */}
-      {captures.length > 0 && (
-        <div className="border-t border-[#3d4a2a] px-4 py-3">
-          <p className="text-[#8b956d] text-xs uppercase tracking-wider mb-2">
-            Recent Captures
+      <div className="border-t border-[#3d4a2a] px-4 py-3">
+        <p className="text-[#8b956d] text-xs uppercase tracking-wider mb-2">
+          Recent Captures
+        </p>
+        {captures.length === 0 ? (
+          <p className="text-[#8b956d]/60 text-xs py-2">
+            No captures yet — take a photo to get started
           </p>
+        ) : (
           <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
             {captures.slice(0, 20).map((cap) => (
               <Link
@@ -367,8 +382,8 @@ export default function CapturePage() {
               </Link>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Quick Note Modal */}
       {showModal && (

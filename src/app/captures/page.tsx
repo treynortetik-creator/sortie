@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
 import CaptureCard from '@/components/CaptureCard';
+import BottomNav from '@/components/BottomNav';
 
 export default function CapturesPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function CapturesPage() {
   const [events, setEvents] = useState<string[]>([]);
   const [filterEvent, setFilterEvent] = useState('all');
   const [processing, setProcessing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -44,10 +46,11 @@ export default function CapturesPage() {
       .toArray();
     const uniqueEvents = [...new Set(allCaptures.map((c) => c.event))];
     setEvents(uniqueEvents);
+    setLoading(false);
   }, [user, filterEvent]);
 
   useEffect(() => {
-    loadCaptures();
+    loadCaptures(); // eslint-disable-line react-hooks/set-state-in-effect -- loading data from IndexedDB
   }, [loadCaptures]);
 
   const handleProcessAll = async () => {
@@ -70,6 +73,18 @@ export default function CapturesPage() {
 
   if (!user) return null;
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#3d4a2a] border-t-[#8b956d] rounded-full animate-spin" />
+          <p className="text-[#8b956d] text-sm">Loading captures…</p>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#1a1f16]">
       {/* Header */}
@@ -87,6 +102,7 @@ export default function CapturesPage() {
           <select
             value={filterEvent}
             onChange={(e) => setFilterEvent(e.target.value)}
+            aria-label="Filter by event"
             className="flex-1 bg-[#2d331f] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
           >
             <option value="all">All Events</option>
@@ -110,7 +126,7 @@ export default function CapturesPage() {
       </div>
 
       {/* Capture List */}
-      <div className="px-4 py-4 space-y-3">
+      <div className="px-4 py-4 space-y-3 pb-20">
         {captures.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-[#8b956d] text-lg mb-2">No captures yet</p>
@@ -124,6 +140,8 @@ export default function CapturesPage() {
           ))
         )}
       </div>
+
+      <BottomNav />
     </div>
   );
 }
