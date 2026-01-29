@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-olive-900: #1a1f16;
+  --color-olive-800: #2d331f;
+  --color-olive-700: #3d4a2a;
+  --color-olive-600: #4a5d23;
+  --color-olive-500: #5a7028;
+  --color-olive-text: #c8d5a3;
+  --color-olive-muted: #8b956d;
+  --color-gold: #e8c547;
+  --color-gold-dark: #b89a2a;
+  --color-danger: #c44b3f;
+  --color-success: #4a8c5c;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-olive-900);
+  color: var(--color-olive-text);
+  font-family: 'Courier New', Courier, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+input, textarea, select {
+  background-color: var(--color-olive-800);
+  color: var(--color-olive-text);
+  border: 1px solid var(--color-olive-700);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-family: 'Courier New', Courier, monospace;
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px var(--color-gold);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-olive-muted);
+}
+
+button {
+  cursor: pointer;
+}
+
+@keyframes pulse-recording {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-recording {
+  animation: pulse-recording 1s ease-in-out infinite;
+}
+
+/* Stencil text style */
+.stencil {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+}
+
+/* Hide scrollbar for capture strip */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
