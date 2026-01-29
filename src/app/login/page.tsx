@@ -42,11 +42,12 @@ export default function LoginPage() {
         </div>
 
         <form
+          aria-label="Sign in"
           onSubmit={handleSubmit}
           className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-8 space-y-6"
         >
           {error && (
-            <div className="bg-red-900/40 border border-red-700/50 text-red-300 text-sm rounded px-4 py-3">
+            <div role="alert" className="bg-red-900/40 border border-red-700/50 text-red-300 text-sm rounded px-4 py-3">
               {error}
             </div>
           )}
@@ -61,6 +62,10 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -79,6 +84,7 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -90,7 +96,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-50 disabled:cursor-not-allowed text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
+            className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-50 disabled:cursor-not-allowed text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3.5 rounded transition-colors active:scale-[0.98]"
           >
             {loading ? 'Authenticating...' : 'Log In'}
           </button>
