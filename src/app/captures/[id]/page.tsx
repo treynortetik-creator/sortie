@@ -2,47 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { db } from '@/lib/db';
+import { db, type LocalCapture } from '@/lib/db';
 import VoiceRecorder from '@/components/VoiceRecorder';
-
-interface CaptureRecord {
-  id?: number;
-  userId: string;
-  event: string;
-  imageBlob: Blob;
-  notes?: string;
-  audioBlob?: Blob;
-  status: string;
-  createdAt: string;
-  name?: string;
-  company?: string;
-  email?: string;
-  phone?: string;
-  emailDraft?: string;
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    captured: 'bg-[#e8c547]/20 text-[#e8c547]',
-    processing: 'bg-blue-500/20 text-blue-400',
-    synced: 'bg-green-500/20 text-green-400',
-    error: 'bg-red-500/20 text-red-400',
-  };
-  return (
-    <span
-      className={`text-xs uppercase tracking-wider px-2 py-1 rounded ${colors[status] || colors.captured}`}
-    >
-      {status}
-    </span>
-  );
-}
+import StatusBadge from '@/components/StatusBadge';
 
 export default function CaptureDetailPage() {
   const router = useRouter();
   const params = useParams();
   const captureId = Number(params.id);
 
-  const [capture, setCapture] = useState<CaptureRecord | null>(null);
+  const [capture, setCapture] = useState<LocalCapture | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   const [name, setName] = useState('');

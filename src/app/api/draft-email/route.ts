@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-
-interface DraftEmailRequest {
-  name: string;
-  company?: string;
-  email?: string;
-  notes?: string;
-  eventName?: string;
-}
+import { draftEmailRequestSchema } from "@/lib/schemas";
 
 interface AnthropicContentBlock {
   type: "text" | "tool_use";
@@ -17,25 +10,19 @@ interface AnthropicMessagesResponse {
   content: AnthropicContentBlock[];
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body: unknown = await request.json();
+    const parsed = draftEmailRequestSchema.safeParse(body);
 
-    if (!body || typeof body !== "object") {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Request body must be a JSON object" },
+        { error: parsed.error.issues[0]?.message ?? "Invalid request" },
         { status: 400 }
       );
     }
 
-    const { name, company, email, notes, eventName } = body as DraftEmailRequest;
-
-    if (!name || typeof name !== 'string' || !name.trim()) {
-      return NextResponse.json(
-        { error: "name is required and must be a non-empty string" },
-        { status: 400 }
-      );
-    }
+    const { name, company, email, notes, eventName } = parsed.data;
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
@@ -55,45 +42,59 @@ export async function POST(request: Request) {
       .filter(Boolean)
       .join("\n");
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        system:
-          "You are a sales representative at SafelyYou, an AI-powered fall detection company for senior living communities. Write a brief, personalized follow-up email based on the event meeting details provided. Be professional but warm.",
-        messages: [
-          {
-            role: "user",
-            content: userMessage,
-          },
-        ],
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error("Anthropic API error:", response.status, errorBody);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1024,
+          system:
+            "You are a sales representative at SafelyYou, an AI-powered fall detection company for senior living communities. Write a brief, personalized follow-up email based on the event meeting details provided. Be professional but warm.",
+          messages: [
+            {
+              role: "user",
+              content: userMessage,
+            },
+          ],
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error("Anthropic API error:", response.status, errorBody);
+        return NextResponse.json(
+          { error: "Failed to generate email draft with Claude API" },
+          { status: 502 }
+        );
+      }
+
+      const data: AnthropicMessagesResponse = await response.json();
+
+      const textBlock = data.content.find(
+        (block) => block.type === "text"
+      );
+      const emailDraft = textBlock?.text ?? "";
+
+      return NextResponse.json({ emailDraft });
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return NextResponse.json(
-        { error: "Failed to generate email draft with Claude API" },
-        { status: 502 }
+        { error: "Request timed out" },
+        { status: 504 }
       );
     }
-
-    const data: AnthropicMessagesResponse = await response.json();
-
-    const textBlock = data.content.find(
-      (block) => block.type === "text"
-    );
-    const emailDraft = textBlock?.text ?? "";
-
-    return NextResponse.json({ emailDraft });
-  } catch (error) {
     console.error("Draft email API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

@@ -1,15 +1,28 @@
 import { NextResponse } from "next/server";
+import { extractRequestSchema, extractedContactSchema } from "@/lib/schemas";
 
-export async function POST(request: Request) {
+interface AnthropicContentBlock {
+  type: "text" | "tool_use";
+  text?: string;
+}
+
+interface AnthropicMessagesResponse {
+  content: AnthropicContentBlock[];
+}
+
+export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const { photoUrl } = await request.json();
+    const body: unknown = await request.json();
+    const parsed = extractRequestSchema.safeParse(body);
 
-    if (!photoUrl) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "photoUrl is required" },
+        { error: parsed.error.issues[0]?.message ?? "Invalid request" },
         { status: 400 }
       );
     }
+
+    const { photoUrl } = parsed.data;
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
@@ -19,71 +32,94 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        system:
-          "Extract contact information from this business card or name badge image. Return JSON with fields: name, company, email, phone. If a field is not visible, omit it.",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "url",
-                  url: photoUrl,
-                },
-              },
-              {
-                type: "text",
-                text: "Extract the contact information from this image and return it as JSON.",
-              },
-            ],
-          },
-        ],
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error("Anthropic API error:", response.status, errorBody);
-      return NextResponse.json(
-        { error: "Failed to process image with Claude API" },
-        { status: 502 }
-      );
-    }
-
-    const data = await response.json();
-
-    const textBlock = data.content?.find(
-      (block: { type: string }) => block.type === "text"
-    );
-    const rawText = textBlock?.text ?? "";
-
-    // Extract JSON from the response text (may be wrapped in markdown code fences)
-    let extracted: Record<string, string>;
     try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1024,
+          system:
+            "Extract contact information from this business card or name badge image. Return JSON with fields: name, company, email, phone. If a field is not visible, omit it.",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image",
+                  source: {
+                    type: "url",
+                    url: photoUrl,
+                  },
+                },
+                {
+                  type: "text",
+                  text: "Extract the contact information from this image and return it as JSON.",
+                },
+              ],
+            },
+          ],
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error("Anthropic API error:", response.status, errorBody);
+        return NextResponse.json(
+          { error: "Failed to process image with Claude API" },
+          { status: 502 }
+        );
+      }
+
+      const data: AnthropicMessagesResponse = await response.json();
+
+      const textBlock = data.content?.find(
+        (block) => block.type === "text"
+      );
+      const rawText = textBlock?.text ?? "";
+
       const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
       const jsonString = jsonMatch ? jsonMatch[1].trim() : rawText.trim();
-      extracted = JSON.parse(jsonString);
-    } catch {
-      console.error("Failed to parse JSON from Claude response:", rawText);
+
+      let jsonParsed: unknown;
+      try {
+        jsonParsed = JSON.parse(jsonString);
+      } catch {
+        console.error("Failed to parse JSON from Claude response:", rawText);
+        return NextResponse.json(
+          { error: "Failed to parse extracted contact information" },
+          { status: 500 }
+        );
+      }
+
+      const validated = extractedContactSchema.safeParse(jsonParsed);
+      if (!validated.success) {
+        console.error("Extracted data validation failed:", validated.error);
+        return NextResponse.json(
+          { error: "Extracted data did not match expected format" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(validated.data);
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return NextResponse.json(
-        { error: "Failed to parse extracted contact information" },
-        { status: 500 }
+        { error: "Request timed out" },
+        { status: 504 }
       );
     }
-
-    return NextResponse.json(extracted);
-  } catch (error) {
     console.error("Extract API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

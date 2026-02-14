@@ -1,6 +1,6 @@
 'use client';
 
-type CaptureStatus = 'captured' | 'processing' | 'ready' | 'needs_review' | 'error';
+import type { CaptureStatus } from '@/lib/db';
 
 interface StatusBadgeProps {
   status: CaptureStatus;
