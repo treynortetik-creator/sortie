@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { db, type LocalCapture } from '@/lib/db';
+import { syncCapture } from '@/lib/sync';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import StatusBadge from '@/components/StatusBadge';
 
@@ -23,6 +24,7 @@ export default function CaptureDetailPage() {
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadCapture = useCallback(async () => {
@@ -109,6 +111,19 @@ export default function CaptureDetailPage() {
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_self');
   };
 
+  const handleReSync = async () => {
+    if (!capture?.id) return;
+    setSyncing(true);
+    try {
+      await syncCapture(capture.id);
+      await loadCapture();
+    } catch (err) {
+      console.error('Re-sync failed:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
@@ -145,6 +160,35 @@ export default function CaptureDetailPage() {
       </div>
 
       <div className="px-4 py-4 space-y-6 max-w-lg mx-auto">
+        {/* Error / Needs Review banner */}
+        {(capture.status === 'error' || capture.status === 'needs_review') && (
+          <div className={`rounded-lg p-4 flex items-start gap-3 ${
+            capture.status === 'error'
+              ? 'bg-red-900/20 border border-red-800/40'
+              : 'bg-orange-900/20 border border-orange-800/40'
+          }`}>
+            <div className="flex-1">
+              <p className={`text-sm font-medium ${
+                capture.status === 'error' ? 'text-red-400' : 'text-orange-400'
+              }`}>
+                {capture.status === 'error' ? 'Sync Failed' : 'Needs Review'}
+              </p>
+              {capture.processingError && (
+                <p className="text-xs text-[#8b956d] mt-1 line-clamp-3">
+                  {capture.processingError}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={handleReSync}
+              disabled={syncing}
+              className="flex-shrink-0 bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-50 text-[#c8d5a3] text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+            >
+              {syncing ? 'Syncing...' : 'Retry'}
+            </button>
+          </div>
+        )}
+
         {/* Photo */}
         {imageUrl && (
           <div className="rounded-lg overflow-hidden border border-[#3d4a2a]">

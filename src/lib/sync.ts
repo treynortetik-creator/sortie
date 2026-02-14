@@ -197,7 +197,7 @@ export async function syncCapture(captureId: number): Promise<void> {
 
     // --- Step 7: Update local record ---
     const finalStatus = errors.length > 0 ? 'needs_review' as const : 'ready' as const;
-    await db.captures.update(capture.id, {
+    const localUpdate: Record<string, unknown> = {
       remoteId,
       photoUrl,
       audioUrl,
@@ -212,7 +212,17 @@ export async function syncCapture(captureId: number): Promise<void> {
       processingError: errors.length > 0 ? errors.join(' | ') : undefined,
       syncedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    });
+    };
+
+    // Free up IndexedDB space — remove large blobs once safely uploaded
+    if (photoUrl && capture.imageBlob) {
+      localUpdate.imageBlob = undefined;
+    }
+    if (audioUrl && capture.audioBlob) {
+      localUpdate.audioBlob = undefined;
+    }
+
+    await db.captures.update(capture.id, localUpdate);
   } catch (err) {
     // Hard failure — upload or DB insert failed
     const errorMsg = err instanceof Error ? err.message : 'Unknown sync error';
