@@ -17,6 +17,7 @@ export default function CapturesPage() {
   const [captures, setCaptures] = useState<LocalCapture[]>([]);
   const [events, setEvents] = useState<string[]>([]);
   const [filterEvent, setFilterEvent] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [processing, setProcessing] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -42,6 +43,10 @@ export default function CapturesPage() {
         .sortBy('createdAt');
     }
 
+    if (filterStatus !== 'all') {
+      results = results.filter((c) => c.status === filterStatus);
+    }
+
     setCaptures(results);
 
     const allCaptures = await db.captures
@@ -50,7 +55,7 @@ export default function CapturesPage() {
     const uniqueEvents = [...new Set(allCaptures.map((c) => c.event))];
     setEvents(uniqueEvents);
     setLoading(false);
-  }, [user, filterEvent]);
+  }, [user, filterEvent, filterStatus]);
 
   useEffect(() => {
     loadCaptures(); // eslint-disable-line react-hooks/set-state-in-effect -- loading data from IndexedDB
@@ -102,12 +107,12 @@ export default function CapturesPage() {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <select
             value={filterEvent}
             onChange={(e) => setFilterEvent(e.target.value)}
             aria-label="Filter by event"
-            className="flex-1 bg-olive-800 border border-olive-700 rounded-lg px-4 py-3 text-olive-text text-sm focus:outline-none focus:border-olive-600"
+            className="flex-1 bg-olive-800 border border-olive-700 rounded-lg px-3 py-3 text-olive-text text-sm focus:outline-none focus:border-olive-600"
           >
             <option value="all">All Events</option>
             {events.map((ev) => (
@@ -115,6 +120,20 @@ export default function CapturesPage() {
                 {ev}
               </option>
             ))}
+          </select>
+
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            aria-label="Filter by status"
+            className="bg-olive-800 border border-olive-700 rounded-lg px-3 py-3 text-olive-text text-sm focus:outline-none focus:border-olive-600"
+          >
+            <option value="all">All Status</option>
+            <option value="captured">Captured</option>
+            <option value="processing">Processing</option>
+            <option value="ready">Ready</option>
+            <option value="needs_review">Needs Review</option>
+            <option value="error">Error</option>
           </select>
 
           {hasUnsynced && (
