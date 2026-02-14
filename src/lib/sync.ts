@@ -246,7 +246,3 @@ export async function syncAllCaptures(): Promise<void> {
     }
   }
 }
-
-export function isOnline(): boolean {
-  return typeof navigator !== 'undefined' ? navigator.onLine : true;
-}

@@ -145,9 +145,12 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
     }
   }, [onRecordingComplete, stopRecording]);
 
-  // Start recording on mount — refs handle cleanup, startRecording is stable
+  // Start recording on mount
   const startRecordingRef = useRef(startRecording);
-  startRecordingRef.current = startRecording;
+
+  useEffect(() => {
+    startRecordingRef.current = startRecording;
+  });
 
   useEffect(() => {
     startRecordingRef.current();

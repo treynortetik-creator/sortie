@@ -205,6 +205,7 @@ export default function CaptureDetailPage() {
         {/* Photo */}
         {imageUrl && (
           <div className="rounded-lg overflow-hidden border border-olive-700">
+            {/* eslint-disable-next-line @next/next/no-img-element -- blob URL from IndexedDB */}
             <img
               src={imageUrl}
               alt="Captured lead"

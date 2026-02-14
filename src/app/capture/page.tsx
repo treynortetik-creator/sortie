@@ -206,7 +206,7 @@ export default function CapturePage() {
   }, []);
 
   useEffect(() => {
-    startCamera();
+    startCamera(); // eslint-disable-line react-hooks/set-state-in-effect -- initializing camera on mount
 
     return () => {
       if (streamRef.current) {
