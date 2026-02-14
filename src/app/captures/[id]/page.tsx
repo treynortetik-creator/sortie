@@ -6,10 +6,12 @@ import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import StatusBadge from '@/components/StatusBadge';
+import { useToast } from '@/components/Toast';
 
 export default function CaptureDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { toast } = useToast();
   const captureId = Number(params.id);
 
   const [capture, setCapture] = useState<LocalCapture | null>(null);
@@ -79,9 +81,11 @@ export default function CaptureDetailPage() {
         emailDraft,
       });
       setSaved(true);
+      toast('Changes saved', 'success');
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error('Failed to save:', err);
+      toast('Failed to save changes', 'error');
     } finally {
       setSaving(false);
     }
@@ -98,8 +102,10 @@ export default function CaptureDetailPage() {
   const handleCopyEmail = async () => {
     try {
       await navigator.clipboard.writeText(emailDraft);
+      toast('Email copied to clipboard', 'success');
     } catch (err) {
       console.error('Clipboard write failed:', err);
+      toast('Failed to copy email', 'error');
     }
   };
 
@@ -117,8 +123,10 @@ export default function CaptureDetailPage() {
     try {
       await syncCapture(capture.id);
       await loadCapture();
+      toast('Re-sync complete', 'success');
     } catch (err) {
       console.error('Re-sync failed:', err);
+      toast('Re-sync failed', 'error');
     } finally {
       setSyncing(false);
     }
@@ -292,25 +300,6 @@ export default function CaptureDetailPage() {
           {showVoiceRecorder && (
             <VoiceRecorder onRecordingComplete={handleVoiceRecordingComplete} />
           )}
-        </div>
-
-        {/* Integration Status */}
-        <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-3">
-          <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
-            Integrations
-          </h2>
-          <div className="flex items-center justify-between">
-            <span className="text-olive-text text-sm">Salesforce</span>
-            <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded">
-              Not connected
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-olive-text text-sm">Clay</span>
-            <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded">
-              Not enriched
-            </span>
-          </div>
         </div>
 
         {/* Email Draft */}

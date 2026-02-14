@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/db';
 import BottomNav from '@/components/BottomNav';
+import { useToast } from '@/components/Toast';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
   const [displayName, setDisplayName] = useState('');
   const [defaultEvent, setDefaultEvent] = useState('');
   const [saving, setSaving] = useState(false);
@@ -64,9 +66,11 @@ export default function SettingsPage() {
       await db.events.clear();
       await db.settings.clear();
       setCleared(true);
+      toast('All local data cleared', 'success');
       setTimeout(() => setCleared(false), 3000);
     } catch (err) {
       console.error('Failed to clear data:', err);
+      toast('Failed to clear data', 'error');
     } finally {
       setClearing(false);
     }

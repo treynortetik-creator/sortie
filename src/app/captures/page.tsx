@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
+import Link from 'next/link';
 import CaptureCard from '@/components/CaptureCard';
 import BottomNav from '@/components/BottomNav';
+import { useToast } from '@/components/Toast';
 
 export default function CapturesPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [captures, setCaptures] = useState<LocalCapture[]>([]);
   const [events, setEvents] = useState<string[]>([]);
   const [filterEvent, setFilterEvent] = useState('all');
@@ -67,6 +70,7 @@ export default function CapturesPage() {
     }
     await loadCaptures();
     setProcessing(false);
+    toast(`Processed ${unsynced.length} capture${unsynced.length === 1 ? '' : 's'}`, 'success');
   };
 
   const hasUnsynced = captures.some((c) => c.status === 'captured');
@@ -129,11 +133,18 @@ export default function CapturesPage() {
       {/* Capture List */}
       <div className="px-4 py-3 space-y-3 scroll-container" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         {captures.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-olive-muted text-lg mb-2">No captures yet</p>
-            <p className="text-olive-muted/60 text-sm">
-              Start capturing leads from the capture screen
+          <div className="text-center py-20 space-y-4">
+            <div className="text-5xl">📷</div>
+            <p className="text-olive-muted text-lg font-medium">No captures yet</p>
+            <p className="text-olive-muted/60 text-sm max-w-xs mx-auto">
+              Snap a photo of a business card or badge to start capturing leads
             </p>
+            <Link
+              href="/capture"
+              className="inline-block bg-olive-600 hover:bg-olive-500 text-olive-text font-semibold uppercase tracking-wider text-sm px-6 py-3 rounded-lg transition-colors active:scale-95"
+            >
+              Start Capturing
+            </Link>
           </div>
         ) : (
           captures.map((cap) => (
