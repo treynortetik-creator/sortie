@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { draftEmailRequestSchema } from "@/lib/schemas";
+import { getAuthenticatedUser } from "@/lib/api-auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 interface AnthropicContentBlock {
   type: "text" | "tool_use";
@@ -10,8 +12,34 @@ interface AnthropicMessagesResponse {
   content: AnthropicContentBlock[];
 }
 
+// 20 drafts per user per minute
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW = 60_000;
+
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    // Auth check
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Rate limiting
+    const { allowed, retryAfterMs } = rateLimit(
+      `draft-email:${user.id}`,
+      RATE_LIMIT_MAX,
+      RATE_LIMIT_WINDOW,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+      );
+    }
+
     const body: unknown = await request.json();
     const parsed = draftEmailRequestSchema.safeParse(body);
 

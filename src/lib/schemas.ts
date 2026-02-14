@@ -17,11 +17,11 @@ export const transcribeRequestSchema = z.object({
 });
 
 export const draftEmailRequestSchema = z.object({
-  name: z.string().min(1, 'Name is required').trim(),
-  company: z.string().optional().default(''),
+  name: z.string().min(1, 'Name is required').max(200).trim(),
+  company: z.string().max(200).optional().default(''),
   email: z.string().email().optional().or(z.literal('')),
-  notes: z.string().optional().default(''),
-  eventName: z.string().optional().default(''),
+  notes: z.string().max(5000).optional().default(''),
+  eventName: z.string().max(200).optional().default(''),
 });
 
 // --- API Response Schemas ---

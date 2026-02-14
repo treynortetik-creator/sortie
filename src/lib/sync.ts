@@ -4,6 +4,12 @@ import { supabase } from './supabase';
 const MAX_RETRIES = 2;
 const RETRY_BASE_MS = 1000;
 
+/** Get the current user's access token for authenticated API calls. */
+async function getAccessToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
+
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
@@ -33,6 +39,12 @@ export async function syncCapture(captureId: number): Promise<void> {
   const errors: string[] = [];
 
   try {
+    // Get auth token for API calls
+    const token = await getAccessToken();
+    const authHeaders: Record<string, string> = token
+      ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+      : { 'Content-Type': 'application/json' };
+
     await db.captures.update(capture.id, {
       status: 'processing',
       updatedAt: new Date().toISOString(),
@@ -89,7 +101,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       try {
         const res = await fetchWithRetry('/api/extract', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({ photoUrl }),
         });
         if (res.ok) {
@@ -110,7 +122,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       try {
         const res = await fetchWithRetry('/api/transcribe', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({ audioUrl }),
         });
         if (res.ok) {
@@ -134,7 +146,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       try {
         const res = await fetchWithRetry('/api/draft-email', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             name: contactName || '',
             company: extractedData.company || capture.company || '',
