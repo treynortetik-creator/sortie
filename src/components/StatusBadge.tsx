@@ -10,7 +10,7 @@ const statusConfig: Record<CaptureStatus, { emoji: string; label: string; classN
   captured: {
     emoji: '📷',
     label: 'Captured',
-    className: 'bg-[#2d331f] text-[#c8d5a3] border border-[#3d4a2a]',
+    className: 'bg-olive-800 text-olive-text border border-olive-700',
   },
   processing: {
     emoji: '⏳',

@@ -75,10 +75,10 @@ export default function CapturesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
+      <div className="min-h-screen bg-olive-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#3d4a2a] border-t-[#8b956d] rounded-full animate-spin" />
-          <p className="text-[#8b956d] text-sm">Loading captures…</p>
+          <div className="w-8 h-8 border-2 border-olive-700 border-t-olive-muted rounded-full animate-spin" />
+          <p className="text-olive-muted text-sm">Loading captures…</p>
         </div>
         <BottomNav />
       </div>
@@ -86,14 +86,14 @@ export default function CapturesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1f16]">
+    <div className="min-h-screen bg-olive-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1a1f16] border-b border-[#3d4a2a] px-4 py-3">
+      <div className="sticky top-0 z-10 bg-olive-900 border-b border-olive-700 px-4 py-3">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-bold text-[#c8d5a3] tracking-wide">
+          <h1 className="text-lg font-bold text-olive-text tracking-wide">
             All Captures
           </h1>
-          <span className="text-[#8b956d] text-sm">
+          <span className="text-olive-muted text-sm">
             {captures.length} total
           </span>
         </div>
@@ -103,7 +103,7 @@ export default function CapturesPage() {
             value={filterEvent}
             onChange={(e) => setFilterEvent(e.target.value)}
             aria-label="Filter by event"
-            className="flex-1 bg-[#2d331f] border border-[#3d4a2a] rounded-lg px-4 py-3 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+            className="flex-1 bg-olive-800 border border-olive-700 rounded-lg px-4 py-3 text-olive-text text-sm focus:outline-none focus:border-olive-600"
           >
             <option value="all">All Events</option>
             {events.map((ev) => (
@@ -118,7 +118,7 @@ export default function CapturesPage() {
               onClick={handleProcessAll}
               disabled={processing}
               aria-label="Process all unsynced captures"
-              className="bg-[#e8c547]/20 text-[#e8c547] text-xs uppercase tracking-wider font-semibold px-4 py-3 rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap active:scale-95"
+              className="bg-gold/20 text-gold text-xs uppercase tracking-wider font-semibold px-4 py-3 rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap active:scale-95"
             >
               {processing ? 'Processing...' : 'Process All'}
             </button>
@@ -130,8 +130,8 @@ export default function CapturesPage() {
       <div className="px-4 py-3 space-y-3 scroll-container" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         {captures.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-[#8b956d] text-lg mb-2">No captures yet</p>
-            <p className="text-[#8b956d]/60 text-sm">
+            <p className="text-olive-muted text-lg mb-2">No captures yet</p>
+            <p className="text-olive-muted/60 text-sm">
               Start capturing leads from the capture screen
             </p>
           </div>

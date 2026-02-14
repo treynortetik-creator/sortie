@@ -44,7 +44,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 bg-[#1a1f16] border-t border-[#3d4a2a] z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 bg-olive-900 border-t border-olive-700 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
@@ -55,8 +55,8 @@ export default function BottomNav() {
               aria-current={isActive ? 'page' : undefined}
               className={`flex flex-col items-center justify-center gap-1 w-full h-full min-h-[48px] transition-colors active:scale-95 ${
                 isActive
-                  ? 'text-[#e8c547]'
-                  : 'text-[#8b956d] hover:text-[#c8d5a3]'
+                  ? 'text-gold'
+                  : 'text-olive-muted hover:text-olive-text'
               }`}
             >
               {item.icon}

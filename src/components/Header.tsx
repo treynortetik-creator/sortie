@@ -8,13 +8,13 @@ export default function Header() {
   const { currentEvent } = useEvent();
 
   return (
-    <header className="bg-[#1a1f16] border-b border-[#3d4a2a] px-4 py-2.5 pt-safe flex items-center justify-between sticky top-0 z-40">
+    <header className="bg-olive-900 border-b border-olive-700 px-4 py-2.5 pt-safe flex items-center justify-between sticky top-0 z-40">
       <div className="flex items-center gap-2.5 min-w-0">
-        <h1 className="text-[#c8d5a3] text-lg font-bold uppercase tracking-[0.3em] select-none flex-shrink-0">
+        <h1 className="text-olive-text text-lg font-bold uppercase tracking-[0.3em] select-none flex-shrink-0">
           SORTIE
         </h1>
         {currentEvent && (
-          <span className="text-[#e8c547] text-xs font-medium truncate max-w-[140px] bg-[#e8c547]/10 px-2 py-0.5 rounded">
+          <span className="text-gold text-xs font-medium truncate max-w-[140px] bg-gold/10 px-2 py-0.5 rounded">
             {currentEvent}
           </span>
         )}
@@ -27,7 +27,7 @@ export default function Header() {
             isOnline ? 'bg-green-500' : 'bg-red-500'
           }`}
         />
-        <span className="text-[#8b956d] text-[0.625rem] font-medium uppercase tracking-wider">
+        <span className="text-olive-muted text-[0.625rem] font-medium uppercase tracking-wider">
           {isOnline ? 'ON' : 'OFF'}
         </span>
       </div>

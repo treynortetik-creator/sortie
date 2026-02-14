@@ -59,8 +59,8 @@ function QuickNoteModal({
       aria-label="Quick note"
       onClick={handleInteraction}
     >
-      <div className="w-full max-w-lg bg-[#2d331f] border-t border-[#3d4a2a] rounded-t-2xl p-6 space-y-4" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
-        <h3 className="text-[#c8d5a3] font-semibold text-lg">Quick Note</h3>
+      <div className="w-full max-w-lg bg-olive-800 border-t border-olive-700 rounded-t-2xl p-6 space-y-4" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
+        <h3 className="text-olive-text font-semibold text-lg">Quick Note</h3>
 
         <input
           type="text"
@@ -71,7 +71,7 @@ function QuickNoteModal({
           }}
           aria-label="Note about this contact"
           placeholder="Add a note about this contact..."
-          className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-4 py-3 text-[#c8d5a3] placeholder-[#8b956d]/50 focus:outline-none focus:border-[#4a5d23] focus:ring-1 focus:ring-[#4a5d23]"
+          className="w-full bg-olive-900 border border-olive-700 rounded px-4 py-3 text-olive-text placeholder-olive-muted/50 focus:outline-none focus:border-olive-600 focus:ring-1 focus:ring-olive-600"
           autoFocus
           enterKeyHint="done"
         />
@@ -84,7 +84,7 @@ function QuickNoteModal({
               handleInteraction();
             }}
             aria-label="Toggle voice recorder"
-            className="flex items-center gap-2 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] px-4 py-2 rounded transition-colors"
+            className="flex items-center gap-2 bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text px-4 py-2 rounded transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +101,7 @@ function QuickNoteModal({
             {showVoice ? 'Hide Recorder' : 'Voice Note'}
           </button>
           {audioBlob && (
-            <span className="text-[#4a5d23] text-sm">Audio recorded</span>
+            <span className="text-olive-600 text-sm">Audio recorded</span>
           )}
         </div>
 
@@ -123,14 +123,14 @@ function QuickNoteModal({
           <button
             onClick={handleSave}
             aria-label="Save note"
-            className="flex-1 bg-[#4a5d23] hover:bg-[#5a7028] text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
+            className="flex-1 bg-olive-600 hover:bg-olive-500 text-olive-text font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
           >
             Save
           </button>
           <button
             onClick={handleSkip}
             aria-label="Skip note"
-            className="flex-1 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
+            className="flex-1 bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
           >
             Skip
           </button>
@@ -312,10 +312,10 @@ export default function CapturePage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
+      <div className="min-h-screen bg-olive-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#3d4a2a] border-t-[#8b956d] rounded-full animate-spin" />
-          <p className="text-[#8b956d] text-sm">Loading…</p>
+          <div className="w-8 h-8 border-2 border-olive-700 border-t-olive-muted rounded-full animate-spin" />
+          <p className="text-olive-muted text-sm">Loading…</p>
         </div>
       </div>
     );
@@ -330,8 +330,8 @@ export default function CapturePage() {
       {/* Compact Header Overlay */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-gradient-to-b from-black/60 to-transparent" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div>
-          <h1 className="text-[#c8d5a3] font-semibold text-xs uppercase tracking-wider">CAPTURE</h1>
-          <p className="text-[#e8c547] text-xs truncate max-w-[200px]">{currentEvent}</p>
+          <h1 className="text-olive-text font-semibold text-xs uppercase tracking-wider">CAPTURE</h1>
+          <p className="text-gold text-xs truncate max-w-[200px]">{currentEvent}</p>
         </div>
         <div className="flex items-center gap-1.5">
           <span
@@ -346,11 +346,11 @@ export default function CapturePage() {
       {/* Full-screen Viewfinder */}
       <div className="flex-1 relative overflow-hidden">
         {cameraError ? (
-          <div role="alert" className="absolute inset-0 bg-[#1a1f16] flex flex-col items-center justify-center p-6 gap-4">
-            <p className="text-[#8b956d] text-center text-sm">{cameraError}</p>
+          <div role="alert" className="absolute inset-0 bg-olive-900 flex flex-col items-center justify-center p-6 gap-4">
+            <p className="text-olive-muted text-center text-sm">{cameraError}</p>
             <button
               onClick={startCamera}
-              className="bg-[#4a5d23] hover:bg-[#5a7028] text-[#c8d5a3] text-sm font-semibold px-5 py-2.5 rounded-lg active:scale-95 transition-all"
+              className="bg-olive-600 hover:bg-olive-500 text-olive-text text-sm font-semibold px-5 py-2.5 rounded-lg active:scale-95 transition-all"
             >
               Try Again
             </button>
@@ -382,7 +382,7 @@ export default function CapturePage() {
                   aria-label={`View capture ${cap.id}`}
                   className="flex-shrink-0 relative active:scale-95 transition-transform"
                 >
-                  <div className="w-[48px] h-[48px] rounded-lg border-2 border-white/20 overflow-hidden bg-[#2d331f]">
+                  <div className="w-[48px] h-[48px] rounded-lg border-2 border-white/20 overflow-hidden bg-olive-800">
                     {cap.id && thumbnailUrls[cap.id] && (
                       /* eslint-disable-next-line @next/next/no-img-element -- blob URL from IndexedDB */
                       <img
@@ -409,7 +409,7 @@ export default function CapturePage() {
               <button
                 onClick={handleProcessAll}
                 aria-label="Process all unsynced captures"
-                className="bg-[#e8c547]/20 text-[#e8c547] text-[10px] uppercase tracking-wider font-semibold px-3 py-2 rounded-lg active:scale-95 transition-transform"
+                className="bg-gold/20 text-gold text-[10px] uppercase tracking-wider font-semibold px-3 py-2 rounded-lg active:scale-95 transition-transform"
               >
                 Process
               </button>

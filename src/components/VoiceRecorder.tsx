@@ -196,12 +196,12 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
 
   if (error) {
     return (
-      <div role="alert" className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-6 text-center">
+      <div role="alert" className="bg-olive-800 border border-olive-700 rounded-lg p-6 text-center">
         <p className="text-red-400 text-sm mb-4">{error}</p>
         <button
           onClick={onCancel}
           aria-label="Cancel recording"
-          className="px-4 py-2 bg-[#1a1f16] border border-[#3d4a2a] text-[#c8d5a3] rounded-lg text-sm hover:bg-[#2d331f] transition-colors"
+          className="px-4 py-2 bg-olive-900 border border-olive-700 text-olive-text rounded-lg text-sm hover:bg-olive-800 transition-colors"
         >
           Cancel
         </button>
@@ -210,7 +210,7 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
   }
 
   return (
-    <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-xl p-5">
+    <div className="bg-olive-800 border border-olive-700 rounded-xl p-5">
       {/* Large stop button with pulsing ring */}
       <div className="flex justify-center mb-5">
         <button
@@ -238,14 +238,14 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
           </span>
         )}
-        <span className="text-[#c8d5a3] text-3xl font-mono font-bold tabular-nums">
+        <span className="text-olive-text text-3xl font-mono font-bold tabular-nums">
           {formatTime(elapsed)}
         </span>
-        <span className="text-[#8b956d] text-sm">/ {formatTime(MAX_DURATION)}</span>
+        <span className="text-olive-muted text-sm">/ {formatTime(MAX_DURATION)}</span>
       </div>
 
       {/* Progress bar */}
-      <div className="w-full bg-[#1a1f16] rounded-full h-2 mb-4">
+      <div className="w-full bg-olive-900 rounded-full h-2 mb-4">
         <div
           className="bg-red-500 h-2 rounded-full transition-all duration-300"
           style={{ width: `${(elapsed / MAX_DURATION) * 100}%` }}
@@ -254,8 +254,8 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
 
       {/* Live transcription */}
       {transcription && (
-        <div className="mb-4 p-3 bg-[#1a1f16] rounded-lg border border-[#3d4a2a] max-h-24 overflow-y-auto scroll-container">
-          <p className="text-[#c8d5a3] text-sm leading-relaxed">{transcription}</p>
+        <div className="mb-4 p-3 bg-olive-900 rounded-lg border border-olive-700 max-h-24 overflow-y-auto scroll-container">
+          <p className="text-olive-text text-sm leading-relaxed">{transcription}</p>
         </div>
       )}
 
@@ -264,7 +264,7 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
         <button
           onClick={handleCancel}
           aria-label="Cancel recording"
-          className="px-6 py-3 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] rounded-lg text-sm font-medium active:scale-95 transition-transform"
+          className="px-6 py-3 bg-olive-900 border border-olive-700 text-olive-muted rounded-lg text-sm font-medium active:scale-95 transition-transform"
         >
           Cancel
         </button>

@@ -126,8 +126,8 @@ export default function CaptureDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
-        <p className="text-[#8b956d]">Loading...</p>
+      <div className="min-h-screen bg-olive-900 flex items-center justify-center">
+        <p className="text-olive-muted">Loading...</p>
       </div>
     );
   }
@@ -135,12 +135,12 @@ export default function CaptureDetailPage() {
   if (!capture) return null;
 
   return (
-    <div className="min-h-screen bg-[#1a1f16]">
+    <div className="min-h-screen bg-olive-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1a1f16] border-b border-[#3d4a2a] px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-olive-900 border-b border-olive-700 px-4 py-3 flex items-center justify-between">
         <button
           onClick={() => router.push('/captures')}
-          className="text-[#8b956d] hover:text-[#c8d5a3] text-sm flex items-center gap-1 transition-colors"
+          className="text-olive-muted hover:text-olive-text text-sm flex items-center gap-1 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -174,7 +174,7 @@ export default function CaptureDetailPage() {
                 {capture.status === 'error' ? 'Sync Failed' : 'Needs Review'}
               </p>
               {capture.processingError && (
-                <p className="text-xs text-[#8b956d] mt-1 line-clamp-3">
+                <p className="text-xs text-olive-muted mt-1 line-clamp-3">
                   {capture.processingError}
                 </p>
               )}
@@ -182,7 +182,7 @@ export default function CaptureDetailPage() {
             <button
               onClick={handleReSync}
               disabled={syncing}
-              className="flex-shrink-0 bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-50 text-[#c8d5a3] text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+              className="flex-shrink-0 bg-olive-600 hover:bg-olive-500 disabled:opacity-50 text-olive-text text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
             >
               {syncing ? 'Syncing...' : 'Retry'}
             </button>
@@ -191,7 +191,7 @@ export default function CaptureDetailPage() {
 
         {/* Photo */}
         {imageUrl && (
-          <div className="rounded-lg overflow-hidden border border-[#3d4a2a]">
+          <div className="rounded-lg overflow-hidden border border-olive-700">
             <img
               src={imageUrl}
               alt="Captured lead"
@@ -201,91 +201,91 @@ export default function CaptureDetailPage() {
         )}
 
         {/* Extracted Data */}
-        <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-4 space-y-4">
-          <h2 className="text-[#e8c547] text-xs uppercase tracking-wider font-semibold">
+        <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-4">
+          <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
             Contact Information
           </h2>
 
           <div>
-            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-1">
+            <label className="block text-olive-muted text-xs uppercase tracking-wider mb-1">
               Name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+              className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="Full name"
             />
           </div>
 
           <div>
-            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-1">
+            <label className="block text-olive-muted text-xs uppercase tracking-wider mb-1">
               Company
             </label>
             <input
               type="text"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+              className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="Company name"
             />
           </div>
 
           <div>
-            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-1">
+            <label className="block text-olive-muted text-xs uppercase tracking-wider mb-1">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+              className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="email@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-[#8b956d] text-xs uppercase tracking-wider mb-1">
+            <label className="block text-olive-muted text-xs uppercase tracking-wider mb-1">
               Phone
             </label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+              className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="+1 (555) 000-0000"
             />
           </div>
         </div>
 
         {/* Notes */}
-        <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-4 space-y-3">
-          <h2 className="text-[#e8c547] text-xs uppercase tracking-wider font-semibold">
+        <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-3">
+          <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
             Notes
           </h2>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23] resize-none"
+            className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600 resize-none"
             placeholder="Notes about this contact..."
           />
         </div>
 
         {/* Audio */}
-        <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-4 space-y-3">
-          <h2 className="text-[#e8c547] text-xs uppercase tracking-wider font-semibold">
+        <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-3">
+          <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
             Voice Note
           </h2>
           {audioUrl ? (
             <audio controls src={audioUrl} className="w-full" />
           ) : (
-            <p className="text-[#8b956d] text-sm">No voice note recorded</p>
+            <p className="text-olive-muted text-sm">No voice note recorded</p>
           )}
           <button
             onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
-            className="text-sm bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] px-3 py-2 rounded transition-colors"
+            className="text-sm bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text px-3 py-2 rounded transition-colors"
           >
             {showVoiceRecorder ? 'Cancel' : audioUrl ? 'Re-record Notes' : 'Record Voice Note'}
           </button>
@@ -295,18 +295,18 @@ export default function CaptureDetailPage() {
         </div>
 
         {/* Integration Status */}
-        <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-4 space-y-3">
-          <h2 className="text-[#e8c547] text-xs uppercase tracking-wider font-semibold">
+        <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-3">
+          <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
             Integrations
           </h2>
           <div className="flex items-center justify-between">
-            <span className="text-[#c8d5a3] text-sm">Salesforce</span>
+            <span className="text-olive-text text-sm">Salesforce</span>
             <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded">
               Not connected
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[#c8d5a3] text-sm">Clay</span>
+            <span className="text-olive-text text-sm">Clay</span>
             <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded">
               Not enriched
             </span>
@@ -314,29 +314,29 @@ export default function CaptureDetailPage() {
         </div>
 
         {/* Email Draft */}
-        <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-4 space-y-3">
-          <h2 className="text-[#e8c547] text-xs uppercase tracking-wider font-semibold">
+        <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-3">
+          <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
             Email Draft
           </h2>
           <textarea
             value={emailDraft}
             onChange={(e) => setEmailDraft(e.target.value)}
             rows={6}
-            className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-3 py-2 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23] resize-none"
+            className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600 resize-none"
             placeholder="Email draft will appear here after processing..."
           />
           <div className="flex gap-3">
             <button
               onClick={handleCopyEmail}
               disabled={!emailDraft}
-              className="flex-1 bg-[#1a1f16] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] disabled:opacity-40 text-sm py-2 rounded transition-colors"
+              className="flex-1 bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text disabled:opacity-40 text-sm py-2 rounded transition-colors"
             >
               Copy Email
             </button>
             <button
               onClick={handleOpenMail}
               disabled={!emailDraft || !email}
-              className="flex-1 bg-[#4a5d23] hover:bg-[#5a7028] text-[#c8d5a3] disabled:opacity-40 text-sm py-2 rounded transition-colors"
+              className="flex-1 bg-olive-600 hover:bg-olive-500 text-olive-text disabled:opacity-40 text-sm py-2 rounded transition-colors"
             >
               Open in Mail
             </button>
@@ -348,12 +348,12 @@ export default function CaptureDetailPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-50 text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
+            className="w-full bg-olive-600 hover:bg-olive-500 disabled:opacity-50 text-olive-text font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
           >
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
           </button>
 
-          <div className="text-center text-[#8b956d]/50 text-xs space-y-1">
+          <div className="text-center text-olive-muted/50 text-xs space-y-1">
             <p>Event: {capture.event}</p>
             <p>
               Captured: {new Date(capture.createdAt).toLocaleString()}
