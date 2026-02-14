@@ -3,14 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEvent } from '@/contexts/EventContext';
 import { useConnection } from '@/contexts/ConnectionContext';
 import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
-import VoiceRecorder from '@/components/VoiceRecorder';
 import StatusBadge from '@/components/StatusBadge';
 import BottomNav from '@/components/BottomNav';
+
+const VoiceRecorder = dynamic(() => import('@/components/VoiceRecorder'), {
+  ssr: false,
+  loading: () => <div className="bg-olive-800 border border-olive-700 rounded-xl p-5 text-center text-olive-muted text-sm">Loading recorder...</div>,
+});
 
 function QuickNoteModal({
   onSave,
@@ -239,12 +244,22 @@ export default function CapturePage() {
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+
+    // Resize to max 1280px on longest side to reduce storage and upload size
+    const MAX_DIM = 1280;
+    let w = video.videoWidth;
+    let h = video.videoHeight;
+    if (w > MAX_DIM || h > MAX_DIM) {
+      const scale = MAX_DIM / Math.max(w, h);
+      w = Math.round(w * scale);
+      h = Math.round(h * scale);
+    }
+    canvas.width = w;
+    canvas.height = h;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0);
+    ctx.drawImage(video, 0, 0, w, h);
 
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.85)

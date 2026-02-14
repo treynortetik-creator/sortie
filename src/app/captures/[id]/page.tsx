@@ -2,11 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
-import VoiceRecorder from '@/components/VoiceRecorder';
 import StatusBadge from '@/components/StatusBadge';
 import { useToast } from '@/components/Toast';
+
+const VoiceRecorder = dynamic(() => import('@/components/VoiceRecorder'), {
+  ssr: false,
+  loading: () => <div className="bg-olive-800 border border-olive-700 rounded-xl p-5 text-center text-olive-muted text-sm">Loading recorder...</div>,
+});
 
 export default function CaptureDetailPage() {
   const router = useRouter();
