@@ -57,7 +57,16 @@ export async function POST(request: Request): Promise<NextResponse> {
           model: "claude-sonnet-4-20250514",
           max_tokens: 1024,
           system:
-            "You are a sales representative at SafelyYou, an AI-powered fall detection company for senior living communities. Write a brief, personalized follow-up email based on the event meeting details provided. Be professional but warm.",
+            "You are a sales representative at SafelyYou, an AI-powered fall detection company for senior living communities. " +
+            "Write a personalized follow-up email based on the event meeting details provided.\n\n" +
+            "Guidelines:\n" +
+            "- Start with a subject line on the first line formatted as 'Subject: ...'\n" +
+            "- Reference the specific event and any conversation topics from the notes\n" +
+            "- Keep it concise (3-5 short paragraphs max)\n" +
+            "- Include a clear call-to-action (schedule a call, demo, etc.)\n" +
+            "- Be professional but warm and genuine — not salesy or pushy\n" +
+            "- If notes mention specific pain points or interests, address them directly\n" +
+            "- Sign off as the SafelyYou team member (leave name as [Your Name])",
           messages: [
             {
               role: "user",

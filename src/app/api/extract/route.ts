@@ -47,7 +47,15 @@ export async function POST(request: Request): Promise<NextResponse> {
           model: "claude-sonnet-4-20250514",
           max_tokens: 1024,
           system:
-            "Extract contact information from this business card or name badge image. Return JSON with fields: name, company, email, phone. If a field is not visible, omit it.",
+            "You are an expert at reading business cards, name badges, and event lanyards. " +
+            "Extract contact information and return ONLY a JSON object with these fields: name, company, email, phone. " +
+            "Rules:\n" +
+            "- If a field is not visible or legible, set it to an empty string.\n" +
+            "- For partially visible text, make your best guess and include it.\n" +
+            "- Handle non-English names and companies (transliterate to Latin if needed).\n" +
+            "- If the image is blurry or upside-down, still attempt extraction.\n" +
+            "- Clean up formatting: trim whitespace, capitalize names properly, format phone numbers.\n" +
+            "- Return raw JSON only, no markdown fences or explanation.",
           messages: [
             {
               role: "user",
@@ -61,7 +69,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                 },
                 {
                   type: "text",
-                  text: "Extract the contact information from this image and return it as JSON.",
+                  text: "Extract the contact information from this image. Return only a JSON object with: name, company, email, phone.",
                 },
               ],
             },
@@ -86,8 +94,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
       const rawText = textBlock?.text ?? "";
 
-      const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
-      const jsonString = jsonMatch ? jsonMatch[1].trim() : rawText.trim();
+      // Try to find JSON in code fences first, then bare JSON object
+      const fenceMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
+      const objectMatch = rawText.match(/\{[\s\S]*\}/);
+      const jsonString = fenceMatch ? fenceMatch[1].trim() : objectMatch ? objectMatch[0].trim() : rawText.trim();
 
       let jsonParsed: unknown;
       try {
