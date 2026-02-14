@@ -145,21 +145,28 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
     }
   }, [onRecordingComplete, stopRecording]);
 
-  // Start recording on mount
+  // Start recording on mount — refs handle cleanup, startRecording is stable
+  const startRecordingRef = useRef(startRecording);
+  startRecordingRef.current = startRecording;
+
   useEffect(() => {
-    startRecording();
+    startRecordingRef.current();
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       }
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.onstop = null;
+        mediaRecorderRef.current.stop();
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formatTime = (seconds: number): string => {

@@ -166,6 +166,11 @@ button:active, a:active {
   50% { opacity: 0.4; }
 }
 
+@keyframes fadeOut {
+  from { opacity: 0.9; }
+  to { opacity: 0; }
+}
+
 .animate-pulse-recording {
   animation: pulse-recording 1s ease-in-out infinite;
 }

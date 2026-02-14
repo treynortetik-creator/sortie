@@ -112,6 +112,10 @@ function QuickNoteModal({
               setShowVoice(false);
               handleInteraction();
             }}
+            onCancel={() => {
+              setShowVoice(false);
+              handleInteraction();
+            }}
           />
         )}
 
@@ -150,6 +154,7 @@ export default function CapturePage() {
   const [lastCaptureId, setLastCaptureId] = useState<number | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState('');
+  const [captureFlash, setCaptureFlash] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -161,27 +166,41 @@ export default function CapturePage() {
     }
   }, [user, currentEvent, router]);
 
-  useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          },
-        });
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setCameraReady(true);
-        }
-      } catch (err) {
-        console.error('Camera access failed:', err);
-        setCameraError('Camera access denied. Please grant permission to use the camera.');
+  const startCamera = useCallback(async () => {
+    setCameraError('');
+    setCameraReady(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setCameraReady(true);
       }
-    };
+    } catch (err) {
+      console.error('Camera access failed:', err);
+      if (err instanceof DOMException) {
+        if (err.name === 'NotAllowedError') {
+          setCameraError('Camera permission denied. Please allow camera access in your browser settings and try again.');
+        } else if (err.name === 'NotFoundError') {
+          setCameraError('No camera found on this device.');
+        } else if (err.name === 'NotReadableError') {
+          setCameraError('Camera is in use by another application. Close other apps using the camera and try again.');
+        } else {
+          setCameraError(`Camera error: ${err.message}`);
+        }
+      } else {
+        setCameraError('Failed to access camera. Please check your device settings.');
+      }
+    }
+  }, []);
 
+  useEffect(() => {
     startCamera();
 
     return () => {
@@ -189,7 +208,7 @@ export default function CapturePage() {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
     };
-  }, []);
+  }, [startCamera]);
 
   const loadCaptures = useCallback(async () => {
     if (!user || !currentEvent) return;
@@ -231,6 +250,10 @@ export default function CapturePage() {
       canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.85)
     );
     if (!blob) return;
+
+    // Flash feedback
+    setCaptureFlash(true);
+    setTimeout(() => setCaptureFlash(false), 150);
 
     const id = await db.captures.add({
       userId: user.id,
@@ -323,8 +346,14 @@ export default function CapturePage() {
       {/* Full-screen Viewfinder */}
       <div className="flex-1 relative overflow-hidden">
         {cameraError ? (
-          <div role="alert" className="absolute inset-0 bg-[#1a1f16] flex items-center justify-center p-6">
+          <div role="alert" className="absolute inset-0 bg-[#1a1f16] flex flex-col items-center justify-center p-6 gap-4">
             <p className="text-[#8b956d] text-center text-sm">{cameraError}</p>
+            <button
+              onClick={startCamera}
+              className="bg-[#4a5d23] hover:bg-[#5a7028] text-[#c8d5a3] text-sm font-semibold px-5 py-2.5 rounded-lg active:scale-95 transition-all"
+            >
+              Try Again
+            </button>
           </div>
         ) : (
           <video
@@ -334,6 +363,9 @@ export default function CapturePage() {
             muted
             className="absolute inset-0 w-full h-full object-cover"
           />
+        )}
+        {captureFlash && (
+          <div className="absolute inset-0 bg-white z-20 pointer-events-none animate-[fadeOut_150ms_ease-out_forwards]" />
         )}
       </div>
 
