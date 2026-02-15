@@ -394,6 +394,9 @@ export default function CaptureDetailPage(): React.ReactNode {
 
           <div className="text-center text-olive-muted/50 text-xs space-y-1">
             <p>Event: {capture.event}</p>
+            {capture.submitterEmail && (
+              <p>Submitted by: {capture.submitterEmail}</p>
+            )}
             <p>
               Captured: {new Date(capture.createdAt).toLocaleString()}
             </p>

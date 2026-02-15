@@ -6,6 +6,7 @@ export interface LocalCapture {
   id?: number;
   remoteId?: string;
   userId: string;
+  submitterEmail?: string;
   event: string;
   imageBlob: Blob;
   photoUrl?: string;

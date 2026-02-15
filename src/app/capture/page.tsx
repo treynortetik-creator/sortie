@@ -272,6 +272,7 @@ export default function CapturePage() {
 
     const id = await db.captures.add({
       userId: user.id,
+      submitterEmail: user.email ?? undefined,
       event: currentEvent,
       imageBlob: blob,
       status: 'captured',

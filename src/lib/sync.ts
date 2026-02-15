@@ -159,6 +159,7 @@ export async function syncCapture(captureId: number): Promise<void> {
 
     const capturePayload = {
       user_id: capture.userId,
+      submitter_email: capture.submitterEmail,
       event_name: capture.event,
       photo_url: photoUrl,
       audio_url: audioUrl,

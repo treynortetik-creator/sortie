@@ -12,11 +12,13 @@ type Tab = 'captures' | 'settings' | 'export';
 interface SupabaseCapture {
   id: string;
   user_id: string;
+  submitter_email: string | null;
   event_name: string;
   photo_url: string | null;
   audio_url: string | null;
   audio_duration: number | null;
   extracted_name: string | null;
+  extracted_title: string | null;
   extracted_company: string | null;
   extracted_email: string | null;
   extracted_phone: string | null;
@@ -191,8 +193,10 @@ function CapturesTab({ token }: { token: string }): React.ReactNode {
     filtered = filtered.filter(
       (c) =>
         c.extracted_name?.toLowerCase().includes(q) ||
+        c.extracted_title?.toLowerCase().includes(q) ||
         c.extracted_company?.toLowerCase().includes(q) ||
-        c.extracted_email?.toLowerCase().includes(q),
+        c.extracted_email?.toLowerCase().includes(q) ||
+        c.submitter_email?.toLowerCase().includes(q),
     );
   }
 
@@ -338,8 +342,13 @@ function CaptureRow({
             </div>
           )}
         </td>
-        <td className="px-4 py-3 text-olive-text font-medium">
-          {capture.extracted_name || <span className="text-olive-muted italic">Unknown</span>}
+        <td className="px-4 py-3">
+          <div className="text-olive-text font-medium">
+            {capture.extracted_name || <span className="text-olive-muted italic">Unknown</span>}
+          </div>
+          {capture.extracted_title && (
+            <div className="text-olive-muted text-xs">{capture.extracted_title}</div>
+          )}
         </td>
         <td className="px-4 py-3 text-olive-muted">
           {capture.extracted_company || '—'}
@@ -417,6 +426,7 @@ function CaptureDetail({ capture }: { capture: SupabaseCapture }): React.ReactNo
 
             <div className="text-olive-muted/50 text-xs space-y-1 pt-2 border-t border-olive-700/50">
               <p>ID: {capture.id}</p>
+              {capture.submitter_email && <p>Submitted by: {capture.submitter_email}</p>}
               <p>Created: {new Date(capture.created_at).toLocaleString()}</p>
               <p>Updated: {new Date(capture.updated_at).toLocaleString()}</p>
               {capture.photo_url && (
@@ -659,12 +669,15 @@ function ExportTab({ token }: { token: string }): React.ReactNode {
 
   function exportCSV(): void {
     const headers = [
-      'name', 'company', 'email', 'phone', 'notes', 'transcription',
-      'status', 'photo_url', 'audio_url', 'event', 'created_at',
+      'submitted_by', 'name', 'title', 'company', 'email', 'phone',
+      'notes', 'transcription', 'status', 'photo_url', 'audio_url',
+      'event', 'created_at',
     ];
 
     const rows = filtered.map((c) => [
+      c.submitter_email ?? '',
       c.extracted_name ?? '',
+      c.extracted_title ?? '',
       c.extracted_company ?? '',
       c.extracted_email ?? '',
       c.extracted_phone ?? '',
@@ -700,12 +713,14 @@ function ExportTab({ token }: { token: string }): React.ReactNode {
       }
 
       lines.push(`### ${c.extracted_name || 'Unknown Contact'}`);
+      if (c.extracted_title) lines.push(`- **Title:** ${c.extracted_title}`);
       if (c.extracted_company) lines.push(`- **Company:** ${c.extracted_company}`);
       if (c.extracted_email) lines.push(`- **Email:** ${c.extracted_email}`);
       if (c.extracted_phone) lines.push(`- **Phone:** ${c.extracted_phone}`);
       lines.push(`- **Status:** ${statusLabel(c.status)}`);
       if (c.notes) lines.push(`- **Notes:** ${c.notes}`);
       if (c.audio_transcription) lines.push(`- **Transcription:** ${c.audio_transcription}`);
+      if (c.submitter_email) lines.push(`- **Submitted by:** ${c.submitter_email}`);
       if (c.photo_url) lines.push(`- **Photo:** ${c.photo_url}`);
       if (c.audio_url) lines.push(`- **Audio:** ${c.audio_url}`);
       lines.push(`- **Captured:** ${new Date(c.created_at).toLocaleString()}`);
