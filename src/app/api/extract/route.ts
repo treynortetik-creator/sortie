@@ -60,12 +60,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    // Read model from app_settings (configured via /admin)
+    // Read model from app_settings (configured via /admin), fall back to env var
     const token = request.headers.get('Authorization')?.slice(7) ?? '';
-    const model = await getAppSetting('extraction_model', token);
+    const model = await getAppSetting('extraction_model', token)
+      ?? process.env.OPENROUTER_MODEL
+      ?? null;
     if (!model) {
       return NextResponse.json(
-        { error: "No AI model configured — visit /admin to set up" },
+        { error: "No AI model configured — set OPENROUTER_MODEL env var or visit /admin" },
         { status: 400 }
       );
     }
@@ -89,13 +91,14 @@ export async function POST(request: Request): Promise<NextResponse> {
               role: "system",
               content:
                 "You are an expert at reading business cards, name badges, and event lanyards. " +
-                "Extract contact information and return ONLY a JSON object with these fields: name, company, email, phone. " +
+                "Extract contact information and return ONLY a JSON object with these fields: name, company, email, phone, notes. " +
                 "Rules:\n" +
                 "- If a field is not visible or legible, set it to an empty string.\n" +
                 "- For partially visible text, make your best guess and include it.\n" +
                 "- Handle non-English names and companies (transliterate to Latin if needed).\n" +
                 "- If the image is blurry or upside-down, still attempt extraction.\n" +
                 "- Clean up formatting: trim whitespace, capitalize names properly, format phone numbers.\n" +
+                "- The 'notes' field should contain any additional information visible on the card/badge that doesn't fit the other fields (job title, address, website, social media, department, etc). Separate multiple items with semicolons.\n" +
                 "- Return raw JSON only, no markdown fences or explanation.",
             },
             {
@@ -107,7 +110,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                 },
                 {
                   type: "text",
-                  text: "Extract the contact information from this image. Return only a JSON object with: name, company, email, phone.",
+                  text: "Extract all information from this image. Return a JSON object with: name, company, email, phone, notes (any additional info like title, address, website, etc).",
                 },
               ],
             },
@@ -118,9 +121,9 @@ export async function POST(request: Request): Promise<NextResponse> {
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error("OpenRouter API error:", response.status, errorBody);
+        console.error("OpenRouter API error:", response.status, "model:", model, errorBody);
         return NextResponse.json(
-          { error: "Failed to process image with AI API" },
+          { error: `AI extraction failed (${response.status}): ${errorBody.slice(0, 200)}` },
           { status: 502 }
         );
       }

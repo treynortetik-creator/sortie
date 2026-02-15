@@ -23,6 +23,7 @@ export const extractedContactSchema = z.object({
   company: z.string().optional().default(''),
   email: z.string().optional().default(''),
   phone: z.string().optional().default(''),
+  notes: z.string().optional().default(''),
 }).passthrough();
 
 export const transcribeResponseSchema = z.object({

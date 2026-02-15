@@ -96,6 +96,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       company?: string;
       email?: string;
       phone?: string;
+      notes?: string;
     } = {};
     if (photoUrl) {
       try {
@@ -139,6 +140,12 @@ export async function syncCapture(captureId: number): Promise<void> {
     }
 
     // --- Step 5: Save to Supabase (upsert by remoteId) ---
+    // Merge extracted notes with any user-written notes
+    const mergedNotes = [capture.notes, extractedData.notes]
+      .filter(Boolean)
+      .join('\n')
+      .trim() || undefined;
+
     const capturePayload = {
       user_id: capture.userId,
       event_name: capture.event,
@@ -149,7 +156,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       extracted_company: extractedData.company || capture.company,
       extracted_email: extractedData.email || capture.email,
       extracted_phone: extractedData.phone || capture.phone,
-      notes: capture.notes,
+      notes: mergedNotes,
       audio_transcription: audioTranscription,
       transcription_source: transcriptionSource,
       status: errors.length > 0 ? 'needs_review' : 'ready',
@@ -187,6 +194,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       company: extractedData.company || capture.company,
       email: extractedData.email || capture.email,
       phone: extractedData.phone || capture.phone,
+      notes: mergedNotes,
       audioTranscription,
       transcriptionSource,
       status: finalStatus,
