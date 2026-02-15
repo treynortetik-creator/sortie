@@ -1,14 +1,14 @@
 # CLAUDE.md — Sortie Project Instructions
 
 ## What Is Sortie?
-Lead Capture Mission Control — a mobile-first PWA for capturing leads at SafelyYou events. Snap a photo of a business card/badge, record a voice note, AI extracts contact info, transcribes notes, and drafts follow-up emails. Offline-first with IndexedDB + Supabase sync.
+Lead Capture Mission Control — a mobile-first PWA for capturing leads at SafelyYou events. Snap a photo of a business card/badge, record a voice note, AI extracts contact info and transcribes notes. Offline-first with IndexedDB + Supabase sync.
 
 ## Tech Stack (DO NOT CHANGE)
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript strict
 - **Styling:** Tailwind CSS v4 (NOT v3 — no tailwind.config.js, uses CSS-based config)
 - **Auth & DB:** Supabase (PostgreSQL + Auth + Storage + RLS)
 - **Local Storage:** Dexie (IndexedDB) for offline-first
-- **AI:** OpenRouter (vision extraction + email drafting), OpenAI Whisper (transcription)
+- **AI:** OpenRouter (vision extraction), OpenAI Whisper (transcription)
 - **PWA:** Custom service worker, stale-while-revalidate
 - **Deployment Target:** Railway (NOT Vercel)
 
@@ -19,6 +19,8 @@ Lead Capture Mission Control — a mobile-first PWA for capturing leads at Safel
 - `src/lib/db.ts` — Dexie IndexedDB schema
 - `src/lib/supabase.ts` — Supabase client
 - `src/lib/sync.ts` — Capture processing + sync pipeline
+- `src/lib/supabase-server.ts` — Server-side Supabase client + helpers
+- `src/app/admin/` — Admin panel (desktop, not linked from mobile UI)
 - `supabase/migrations/` — Database schema
 - `public/sw.js` — Service worker
 
@@ -29,7 +31,6 @@ Lead Capture Mission Control — a mobile-first PWA for capturing leads at Safel
    - Upload photo/audio to Supabase Storage
    - `/api/extract` (OpenRouter vision) → contact extraction
    - `/api/transcribe` (Whisper) → audio transcription
-   - `/api/draft-email` (OpenRouter) → follow-up email
    - Insert into Supabase PostgreSQL
 4. Local record updated with extracted data + `ready` status
 
@@ -61,7 +62,6 @@ Lead Capture Mission Control — a mobile-first PWA for capturing leads at Safel
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=           # optional, defaults to anthropic/claude-sonnet-4-20250514
-OPENAI_API_KEY=
+OPENROUTER_API_KEY=          # extraction model selected via /admin
+OPENAI_API_KEY=              # Whisper transcription
 ```

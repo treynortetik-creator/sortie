@@ -3,55 +3,26 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface VoiceRecorderProps {
-  onRecordingComplete: (blob: Blob, duration?: number, transcription?: string) => void;
+  onRecordingComplete: (blob: Blob, duration?: number) => void;
   onCancel?: () => void;
-}
-
-interface SpeechRecognitionEvent {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-interface SpeechRecognitionInstance extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: Event) => void) | null;
-  onend: (() => void) | null;
-}
-
-declare global {
-  interface Window {
-    webkitSpeechRecognition: new () => SpeechRecognitionInstance;
-    SpeechRecognition: new () => SpeechRecognitionInstance;
-  }
 }
 
 const MAX_DURATION = 60;
 
-export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRecorderProps) {
+export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRecorderProps): React.ReactNode {
   const [isRecording, setIsRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [transcription, setTranscription] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-  const transcriptionRef = useRef('');
   const streamRef = useRef<MediaStream | null>(null);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-    }
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
     }
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -68,8 +39,6 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
     try {
       setError(null);
       chunksRef.current = [];
-      transcriptionRef.current = '';
-      setTranscription('');
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -86,45 +55,8 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
-        const finalTranscription = transcriptionRef.current.trim() || undefined;
-        onRecordingComplete(blob, duration, finalTranscription);
+        onRecordingComplete(blob, duration);
       };
-
-      // Start speech recognition if available
-      const SpeechRecognitionClass =
-        window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognitionClass) {
-        const recognition = new SpeechRecognitionClass();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-          let finalText = '';
-          let interimText = '';
-          for (let i = 0; i < event.results.length; i++) {
-            const result = event.results[i];
-            if (result.isFinal) {
-              finalText += result[0].transcript;
-            } else {
-              interimText += result[0].transcript;
-            }
-          }
-          transcriptionRef.current = finalText;
-          setTranscription(finalText + interimText);
-        };
-
-        recognition.onerror = () => {
-          // Speech recognition error is non-fatal; recording continues
-        };
-
-        recognition.onend = () => {
-          // Recognition may auto-stop; don't restart
-        };
-
-        recognitionRef.current = recognition;
-        recognition.start();
-      }
 
       startTimeRef.current = Date.now();
       setElapsed(0);
@@ -162,9 +94,6 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
       }
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.onstop = null;
         mediaRecorderRef.current.stop();
@@ -182,9 +111,6 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.onstop = null;
       mediaRecorderRef.current.stop();
-    }
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
     }
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -254,13 +180,6 @@ export default function VoiceRecorder({ onRecordingComplete, onCancel }: VoiceRe
           style={{ width: `${(elapsed / MAX_DURATION) * 100}%` }}
         />
       </div>
-
-      {/* Live transcription */}
-      {transcription && (
-        <div className="mb-4 p-3 bg-olive-900 rounded-lg border border-olive-700 max-h-24 overflow-y-auto scroll-container">
-          <p className="text-olive-text text-sm leading-relaxed">{transcription}</p>
-        </div>
-      )}
 
       {/* Cancel */}
       <div className="flex justify-center">

@@ -18,12 +18,11 @@ export interface LocalCapture {
   phone?: string;
   notes?: string;
   audioTranscription?: string;
-  transcriptionSource?: 'web_speech' | 'whisper';
+  transcriptionSource?: 'whisper';
   sfMatchStatus?: string;
   sfAccountId?: string;
   sfContactId?: string;
   clayData?: Record<string, unknown>;
-  emailDraft?: string;
   status: CaptureStatus;
   processingError?: string;
   createdAt: string;

@@ -16,14 +16,6 @@ export const transcribeRequestSchema = z.object({
   ),
 });
 
-export const draftEmailRequestSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(200).trim(),
-  company: z.string().max(200).optional().default(''),
-  email: z.string().email().optional().or(z.literal('')),
-  notes: z.string().max(5000).optional().default(''),
-  eventName: z.string().max(200).optional().default(''),
-});
-
 // --- API Response Schemas ---
 
 export const extractedContactSchema = z.object({
@@ -41,5 +33,4 @@ export const transcribeResponseSchema = z.object({
 
 export type ExtractRequest = z.infer<typeof extractRequestSchema>;
 export type TranscribeRequest = z.infer<typeof transcribeRequestSchema>;
-export type DraftEmailRequest = z.infer<typeof draftEmailRequestSchema>;
 export type ExtractedContact = z.infer<typeof extractedContactSchema>;

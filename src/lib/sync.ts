@@ -138,36 +138,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       }
     }
 
-    // --- Step 5: Draft follow-up email ---
-    let emailDraft = capture.emailDraft;
-    const contactName = extractedData.name || capture.name;
-    const contactEmail = extractedData.email || capture.email;
-    if (!emailDraft && (contactName || contactEmail)) {
-      try {
-        const res = await fetchWithRetry('/api/draft-email', {
-          method: 'POST',
-          headers: authHeaders,
-          body: JSON.stringify({
-            name: contactName || '',
-            company: extractedData.company || capture.company || '',
-            email: contactEmail || '',
-            notes: audioTranscription || capture.notes || '',
-            eventName: capture.event,
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          emailDraft = data.emailDraft;
-        } else {
-          const body = await res.text().catch(() => '');
-          errors.push(`Email draft failed (${res.status}): ${body.slice(0, 200)}`);
-        }
-      } catch (err) {
-        errors.push(`Email draft error: ${err instanceof Error ? err.message : 'unknown'}`);
-      }
-    }
-
-    // --- Step 6: Save to Supabase (upsert by remoteId) ---
+    // --- Step 5: Save to Supabase (upsert by remoteId) ---
     const capturePayload = {
       user_id: capture.userId,
       event_name: capture.event,
@@ -181,7 +152,6 @@ export async function syncCapture(captureId: number): Promise<void> {
       notes: capture.notes,
       audio_transcription: audioTranscription,
       transcription_source: transcriptionSource,
-      email_draft: emailDraft,
       status: errors.length > 0 ? 'needs_review' : 'ready',
       processing_error: errors.length > 0 ? errors.join(' | ') : null,
       created_at: capture.createdAt,
@@ -207,7 +177,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       remoteId = inserted?.id;
     }
 
-    // --- Step 7: Update local record ---
+    // --- Step 6: Update local record ---
     const finalStatus = errors.length > 0 ? 'needs_review' as const : 'ready' as const;
     const localUpdate: Record<string, unknown> = {
       remoteId,
@@ -219,7 +189,6 @@ export async function syncCapture(captureId: number): Promise<void> {
       phone: extractedData.phone || capture.phone,
       audioTranscription,
       transcriptionSource,
-      emailDraft,
       status: finalStatus,
       processingError: errors.length > 0 ? errors.join(' | ') : undefined,
       syncedAt: new Date().toISOString(),

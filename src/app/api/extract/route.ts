@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { extractRequestSchema, extractedContactSchema } from "@/lib/schemas";
 import { getAuthenticatedUser } from "@/lib/api-auth";
 import { rateLimit } from "@/lib/rate-limit";
+import { getAppSetting } from "@/lib/supabase-server";
 
 interface OpenRouterChoice {
   message: { role: string; content: string };
@@ -59,7 +60,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const model = process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4-20250514";
+    // Read model from app_settings (configured via /admin)
+    const token = request.headers.get('Authorization')?.slice(7) ?? '';
+    const model = await getAppSetting('extraction_model', token);
+    if (!model) {
+      return NextResponse.json(
+        { error: "No AI model configured — visit /admin to set up" },
+        { status: 400 }
+      );
+    }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
 

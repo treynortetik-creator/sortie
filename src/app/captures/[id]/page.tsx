@@ -13,7 +13,7 @@ const VoiceRecorder = dynamic(() => import('@/components/VoiceRecorder'), {
   loading: () => <div className="bg-olive-800 border border-olive-700 rounded-xl p-5 text-center text-olive-muted text-sm">Loading recorder...</div>,
 });
 
-export default function CaptureDetailPage() {
+export default function CaptureDetailPage(): React.ReactNode {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
@@ -27,7 +27,7 @@ export default function CaptureDetailPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
-  const [emailDraft, setEmailDraft] = useState('');
+  const [transcription, setTranscription] = useState('');
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -47,7 +47,7 @@ export default function CaptureDetailPage() {
       setEmail(record.email || '');
       setPhone(record.phone || '');
       setNotes(record.notes || '');
-      setEmailDraft(record.emailDraft || '');
+      setTranscription(record.audioTranscription || '');
 
       if (record.imageBlob) {
         setImageUrl(URL.createObjectURL(record.imageBlob));
@@ -83,7 +83,7 @@ export default function CaptureDetailPage() {
         email,
         phone,
         notes,
-        emailDraft,
+        audioTranscription: transcription || undefined,
       });
       setSaved(true);
       toast('Changes saved', 'success');
@@ -96,30 +96,30 @@ export default function CaptureDetailPage() {
     }
   };
 
-  const handleVoiceRecordingComplete = async (blob: Blob) => {
+  const handleVoiceRecordingComplete = async (blob: Blob, duration?: number) => {
     if (!capture?.id) return;
-    await db.captures.update(capture.id, { audioBlob: blob });
+    await db.captures.update(capture.id, {
+      audioBlob: blob,
+      audioDuration: duration,
+    });
     if (audioUrl) URL.revokeObjectURL(audioUrl);
     setAudioUrl(URL.createObjectURL(blob));
     setShowVoiceRecorder(false);
-  };
+    toast('Voice note saved', 'success');
 
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(emailDraft);
-      toast('Email copied to clipboard', 'success');
-    } catch (err) {
-      console.error('Clipboard write failed:', err);
-      toast('Failed to copy email', 'error');
+    // Auto-sync attempt if online
+    if (navigator.onLine) {
+      setSyncing(true);
+      try {
+        await syncCapture(capture.id);
+        await loadCapture();
+        toast('Synced successfully', 'success');
+      } catch {
+        toast('Sync failed — you can retry later', 'error');
+      } finally {
+        setSyncing(false);
+      }
     }
-  };
-
-  const handleOpenMail = () => {
-    const subject = encodeURIComponent(
-      `Great connecting${name ? ` ${name}` : ''}${capture?.event ? ` at ${capture.event}` : ''}`
-    );
-    const body = encodeURIComponent(emailDraft);
-    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_self');
   };
 
   const handleReSync = async () => {
@@ -146,6 +146,12 @@ export default function CaptureDetailPage() {
   }
 
   if (!capture) return null;
+
+  // Determine transcription state
+  const hasAudio = !!(audioUrl || capture.audioUrl);
+  const hasSynced = !!capture.syncedAt;
+  const hasTranscription = !!(capture.audioTranscription || transcription);
+  const transcriptionFailed = capture.processingError?.includes('Transcription failed');
 
   return (
     <div className="min-h-screen bg-olive-900">
@@ -287,16 +293,68 @@ export default function CaptureDetailPage() {
           />
         </div>
 
-        {/* Audio */}
+        {/* Audio + Transcription */}
         <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-3">
           <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
             Voice Note
           </h2>
+
           {audioUrl ? (
             <audio controls src={audioUrl} className="w-full" />
           ) : (
             <p className="text-olive-muted text-sm">No voice note recorded</p>
           )}
+
+          {/* Transcription states */}
+          {hasAudio && (
+            <div className="space-y-2">
+              {syncing ? (
+                <div className="flex items-center gap-2 text-olive-muted text-sm">
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Transcribing...
+                </div>
+              ) : hasTranscription ? (
+                <div>
+                  <label className="block text-olive-muted text-xs uppercase tracking-wider mb-1">
+                    Transcription
+                  </label>
+                  <textarea
+                    value={transcription}
+                    onChange={(e) => setTranscription(e.target.value)}
+                    rows={3}
+                    className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600 resize-none"
+                    placeholder="Transcription..."
+                  />
+                </div>
+              ) : transcriptionFailed ? (
+                <div className="flex items-center justify-between">
+                  <p className="text-red-400 text-sm">Transcription failed</p>
+                  <button
+                    onClick={handleReSync}
+                    disabled={syncing}
+                    className="text-sm bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text px-3 py-2 rounded transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : !hasSynced ? (
+                <div className="flex items-center justify-between">
+                  <p className="text-olive-muted text-sm">Transcription pending</p>
+                  <button
+                    onClick={handleReSync}
+                    disabled={syncing}
+                    className="text-sm bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text px-3 py-2 rounded transition-colors"
+                  >
+                    Sync Now
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          )}
+
           <button
             onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
             className="text-sm bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text px-3 py-2 rounded transition-colors"
@@ -306,36 +364,6 @@ export default function CaptureDetailPage() {
           {showVoiceRecorder && (
             <VoiceRecorder onRecordingComplete={handleVoiceRecordingComplete} />
           )}
-        </div>
-
-        {/* Email Draft */}
-        <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-3">
-          <h2 className="text-gold text-xs uppercase tracking-wider font-semibold">
-            Email Draft
-          </h2>
-          <textarea
-            value={emailDraft}
-            onChange={(e) => setEmailDraft(e.target.value)}
-            rows={6}
-            className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600 resize-none"
-            placeholder="Email draft will appear here after processing..."
-          />
-          <div className="flex gap-3">
-            <button
-              onClick={handleCopyEmail}
-              disabled={!emailDraft}
-              className="flex-1 bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text disabled:opacity-40 text-sm py-2 rounded transition-colors"
-            >
-              Copy Email
-            </button>
-            <button
-              onClick={handleOpenMail}
-              disabled={!emailDraft || !email}
-              className="flex-1 bg-olive-600 hover:bg-olive-500 text-olive-text disabled:opacity-40 text-sm py-2 rounded transition-colors"
-            >
-              Open in Mail
-            </button>
-          </div>
         </div>
 
         {/* Save / Meta */}

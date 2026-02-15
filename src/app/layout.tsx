@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { StoragePersist } from "@/components/StoragePersist";
 
 export const metadata: Metadata = {
   title: "Sortie — Lead Capture Mission Control",
@@ -37,6 +39,8 @@ export default function RootLayout({
           {children}
         </Providers>
         <ServiceWorkerRegistrar />
+        <InstallPrompt />
+        <StoragePersist />
       </body>
     </html>
   );

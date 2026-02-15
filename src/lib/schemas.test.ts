@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   extractRequestSchema,
   transcribeRequestSchema,
-  draftEmailRequestSchema,
   extractedContactSchema,
   transcribeResponseSchema,
 } from './schemas';
@@ -48,79 +47,6 @@ describe('transcribeRequestSchema', () => {
       audioUrl: 'https://evil.com/audio.webm',
     });
     expect(result.success).toBe(false);
-  });
-});
-
-describe('draftEmailRequestSchema', () => {
-  it('accepts valid request with all fields', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: 'John Doe',
-      company: 'Acme Inc',
-      email: 'john@acme.com',
-      notes: 'Met at booth',
-      eventName: 'CES 2026',
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('accepts minimal request (name only)', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: 'Jane',
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.company).toBe('');
-      expect(result.data.notes).toBe('');
-      expect(result.data.eventName).toBe('');
-    }
-  });
-
-  it('rejects empty name', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: '',
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects name exceeding max length', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: 'A'.repeat(201),
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects notes exceeding max length', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: 'Test',
-      notes: 'A'.repeat(5001),
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts empty string for email', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: 'Test',
-      email: '',
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects invalid email format', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: 'Test',
-      email: 'not-an-email',
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('trims whitespace from name', () => {
-    const result = draftEmailRequestSchema.safeParse({
-      name: '  John Doe  ',
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.name).toBe('John Doe');
-    }
   });
 });
 
