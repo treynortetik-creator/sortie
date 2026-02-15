@@ -4,6 +4,9 @@ import { supabase } from './supabase';
 const MAX_RETRIES = 2;
 const RETRY_BASE_MS = 1000;
 
+/** In-flight sync lock — prevents concurrent syncs of the same capture. */
+const syncing = new Set<number>();
+
 /** Get the current user's access token for authenticated API calls. */
 async function getAccessToken(): Promise<string | null> {
   const { data: { session } } = await supabase.auth.getSession();
@@ -33,8 +36,15 @@ async function fetchWithRetry(
 }
 
 export async function syncCapture(captureId: number): Promise<void> {
+  // Prevent concurrent sync of the same capture
+  if (syncing.has(captureId)) return;
+  syncing.add(captureId);
+
   const capture = await db.captures.get(captureId);
-  if (!capture || !capture.id) return;
+  if (!capture || !capture.id) {
+    syncing.delete(captureId);
+    return;
+  }
 
   const errors: string[] = [];
 
@@ -93,6 +103,7 @@ export async function syncCapture(captureId: number): Promise<void> {
     // --- Step 3: Extract contact info from photo ---
     let extractedData: {
       name?: string;
+      title?: string;
       company?: string;
       email?: string;
       phone?: string;
@@ -153,6 +164,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       audio_url: audioUrl,
       audio_duration: capture.audioDuration,
       extracted_name: extractedData.name || capture.name,
+      extracted_title: extractedData.title || capture.title,
       extracted_company: extractedData.company || capture.company,
       extracted_email: extractedData.email || capture.email,
       extracted_phone: extractedData.phone || capture.phone,
@@ -191,6 +203,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       photoUrl,
       audioUrl,
       name: extractedData.name || capture.name,
+      title: extractedData.title || capture.title,
       company: extractedData.company || capture.company,
       email: extractedData.email || capture.email,
       phone: extractedData.phone || capture.phone,
@@ -220,6 +233,8 @@ export async function syncCapture(captureId: number): Promise<void> {
       processingError: errorMsg,
       updatedAt: new Date().toISOString(),
     });
+  } finally {
+    syncing.delete(captureId);
   }
 }
 

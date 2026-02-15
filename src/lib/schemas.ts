@@ -20,6 +20,7 @@ export const transcribeRequestSchema = z.object({
 
 export const extractedContactSchema = z.object({
   name: z.string().optional().default(''),
+  title: z.string().optional().default(''),
   company: z.string().optional().default(''),
   email: z.string().optional().default(''),
   phone: z.string().optional().default(''),

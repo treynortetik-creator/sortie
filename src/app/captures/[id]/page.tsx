@@ -23,6 +23,7 @@ export default function CaptureDetailPage(): React.ReactNode {
   const [imageUrl, setImageUrl] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -43,6 +44,7 @@ export default function CaptureDetailPage(): React.ReactNode {
       }
       setCapture(record);
       setName(record.name || '');
+      setTitle(record.title || '');
       setCompany(record.company || '');
       setEmail(record.email || '');
       setPhone(record.phone || '');
@@ -79,6 +81,7 @@ export default function CaptureDetailPage(): React.ReactNode {
     try {
       await db.captures.update(capture.id, {
         name,
+        title,
         company,
         email,
         phone,
@@ -236,6 +239,19 @@ export default function CaptureDetailPage(): React.ReactNode {
               onChange={(e) => setName(e.target.value)}
               className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="Full name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-olive-muted text-xs uppercase tracking-wider mb-1">
+              Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
+              placeholder="Job title"
             />
           </div>
 

@@ -13,6 +13,7 @@ export interface LocalCapture {
   audioUrl?: string;
   audioDuration?: number;
   name?: string;
+  title?: string;
   company?: string;
   email?: string;
   phone?: string;

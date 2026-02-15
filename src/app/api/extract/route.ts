@@ -91,14 +91,15 @@ export async function POST(request: Request): Promise<NextResponse> {
               role: "system",
               content:
                 "You are an expert at reading business cards, name badges, and event lanyards. " +
-                "Extract contact information and return ONLY a JSON object with these fields: name, company, email, phone, notes. " +
+                "Extract contact information and return ONLY a JSON object with these fields: name, title, company, email, phone, notes. " +
                 "Rules:\n" +
                 "- If a field is not visible or legible, set it to an empty string.\n" +
                 "- For partially visible text, make your best guess and include it.\n" +
                 "- Handle non-English names and companies (transliterate to Latin if needed).\n" +
                 "- If the image is blurry or upside-down, still attempt extraction.\n" +
                 "- Clean up formatting: trim whitespace, capitalize names properly, format phone numbers.\n" +
-                "- The 'notes' field should contain any additional information visible on the card/badge that doesn't fit the other fields (job title, address, website, social media, department, etc). Separate multiple items with semicolons.\n" +
+                "- The 'title' field is the person's job title or role (e.g. \"VP of Sales\", \"Senior Engineer\", \"CEO\").\n" +
+                "- The 'notes' field should contain any additional information visible on the card/badge that doesn't fit the other fields (address, website, social media, department, etc). Separate multiple items with semicolons.\n" +
                 "- Return raw JSON only, no markdown fences or explanation.",
             },
             {
@@ -110,7 +111,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                 },
                 {
                   type: "text",
-                  text: "Extract all information from this image. Return a JSON object with: name, company, email, phone, notes (any additional info like title, address, website, etc).",
+                  text: "Extract all information from this image. Return a JSON object with: name, title, company, email, phone, notes (any additional info like address, website, etc).",
                 },
               ],
             },
