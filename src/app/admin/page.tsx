@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -88,7 +87,7 @@ export default function AdminPage(): React.ReactNode {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/');
+      router.push('/login');
     }
   }, [authLoading, user, router]);
 
@@ -158,20 +157,23 @@ function CapturesTab({ token }: { token: string }): React.ReactNode {
 
   async function loadCaptures(): Promise<void> {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('captures')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Failed to load captures:', error);
-    } else {
-      setCaptures(data ?? []);
-      // Auto-select first event
-      if (data && data.length > 0 && !selectedEvent) {
-        const events = [...new Set(data.map((c) => c.event_name))];
-        setSelectedEvent(events[0] ?? null);
+    try {
+      const res = await fetch('/api/admin/captures', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const data: SupabaseCapture[] = json.captures ?? [];
+        setCaptures(data);
+        if (data.length > 0 && !selectedEvent) {
+          const events = [...new Set(data.map((c) => c.event_name))];
+          setSelectedEvent(events[0] ?? null);
+        }
+      } else {
+        console.error('Failed to load captures:', res.status);
       }
+    } catch (err) {
+      console.error('Failed to load captures:', err);
     }
     setLoading(false);
   }
@@ -644,19 +646,23 @@ function ExportTab({ token }: { token: string }): React.ReactNode {
 
   useEffect(() => {
     void loadCaptures();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadCaptures(): Promise<void> {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('captures')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Failed to load captures:', error);
-    } else {
-      setCaptures(data ?? []);
+    try {
+      const res = await fetch('/api/admin/captures', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setCaptures(json.captures ?? []);
+      } else {
+        console.error('Failed to load captures:', res.status);
+      }
+    } catch (err) {
+      console.error('Failed to load captures:', err);
     }
     setLoading(false);
   }

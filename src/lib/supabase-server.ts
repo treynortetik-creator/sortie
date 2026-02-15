@@ -15,6 +15,18 @@ export function createServerClient(token: string): SupabaseClient | null {
 }
 
 /**
+ * Create a server-side Supabase client using the service role key.
+ * Bypasses RLS — use only in admin API routes after verifying auth.
+ */
+export function createServiceClient(): SupabaseClient | null {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return null;
+
+  return createClient(supabaseUrl, serviceKey);
+}
+
+/**
  * Read a single app setting by key. Returns null if not found or not configured.
  * Requires a valid auth token (RLS enforced).
  */

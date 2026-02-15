@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEvent } from '@/contexts/EventContext';
 import { useConnection } from '@/contexts/ConnectionContext';
@@ -11,139 +10,6 @@ import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
 import StatusBadge from '@/components/StatusBadge';
 import BottomNav from '@/components/BottomNav';
-
-const VoiceRecorder = dynamic(() => import('@/components/VoiceRecorder'), {
-  ssr: false,
-  loading: () => <div className="bg-olive-800 border border-olive-700 rounded-xl p-5 text-center text-olive-muted text-sm">Loading recorder...</div>,
-});
-
-function QuickNoteModal({
-  onSave,
-  onSkip,
-}: {
-  onSave: (notes: string, audioBlob?: Blob) => void;
-  onSkip: () => void;
-}) {
-  const [notes, setNotes] = useState('');
-  const [audioBlob, setAudioBlob] = useState<Blob | undefined>();
-  const [showVoice, setShowVoice] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const resetTimer = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      onSkip();
-    }, 10000);
-  }, [onSkip]);
-
-  useEffect(() => {
-    resetTimer();
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [resetTimer]);
-
-  const handleInteraction = () => {
-    resetTimer();
-  };
-
-  const handleSave = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    onSave(notes, audioBlob);
-  };
-
-  const handleSkip = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    onSkip();
-  };
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/70 z-50 flex items-end justify-center"
-      role="dialog"
-      aria-label="Quick note"
-      onClick={handleInteraction}
-    >
-      <div className="w-full max-w-lg bg-olive-800 border-t border-olive-700 rounded-t-2xl p-6 space-y-4" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
-        <h3 className="text-olive-text font-semibold text-lg">Quick Note</h3>
-
-        <input
-          type="text"
-          value={notes}
-          onChange={(e) => {
-            setNotes(e.target.value);
-            handleInteraction();
-          }}
-          aria-label="Note about this contact"
-          placeholder="Add a note about this contact..."
-          className="w-full bg-olive-900 border border-olive-700 rounded px-4 py-3 text-olive-text placeholder-olive-muted/50 focus:outline-none focus:border-olive-600 focus:ring-1 focus:ring-olive-600"
-          autoFocus
-          enterKeyHint="done"
-        />
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setShowVoice(!showVoice);
-              handleInteraction();
-            }}
-            aria-label="Toggle voice recorder"
-            className="flex items-center gap-2 bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text px-4 py-2 rounded transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
-                clipRule="evenodd"
-              />
-            </svg>
-            {showVoice ? 'Hide Recorder' : 'Voice Note'}
-          </button>
-          {audioBlob && (
-            <span className="text-olive-600 text-sm">Audio recorded</span>
-          )}
-        </div>
-
-        {showVoice && (
-          <VoiceRecorder
-            onRecordingComplete={(blob: Blob) => {
-              setAudioBlob(blob);
-              setShowVoice(false);
-              handleInteraction();
-            }}
-            onCancel={() => {
-              setShowVoice(false);
-              handleInteraction();
-            }}
-          />
-        )}
-
-        <div className="flex gap-3 pt-2">
-          <button
-            onClick={handleSave}
-            aria-label="Save note"
-            className="flex-1 bg-olive-600 hover:bg-olive-500 text-olive-text font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
-          >
-            Save
-          </button>
-          <button
-            onClick={handleSkip}
-            aria-label="Skip note"
-            className="flex-1 bg-olive-900 border border-olive-700 text-olive-muted hover:text-olive-text font-semibold uppercase tracking-wider text-sm py-3 rounded transition-colors"
-          >
-            Skip
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function CapturePage() {
   const router = useRouter();
@@ -155,8 +21,6 @@ export default function CapturePage() {
   const streamRef = useRef<MediaStream | null>(null);
   const [captures, setCaptures] = useState<LocalCapture[]>([]);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<number, string>>({});
-  const [showModal, setShowModal] = useState(false);
-  const [lastCaptureId, setLastCaptureId] = useState<number | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const [captureFlash, setCaptureFlash] = useState(false);
@@ -279,35 +143,15 @@ export default function CapturePage() {
       createdAt: new Date().toISOString(),
     });
 
-    setLastCaptureId(id as number);
-    setShowModal(true);
-    await loadCaptures();
+    // Navigate directly to capture detail for editing
+    router.push(`/captures/${id}`);
 
+    // Fire-and-forget sync in background
     if (isOnline) {
-      try {
-        await syncCapture(id as number);
-      } catch (err) {
+      syncCapture(id as number).catch((err) => {
         console.error('Sync failed:', err);
-      }
+      });
     }
-  };
-
-  const handleNoteSave = async (notes: string, audioBlob?: Blob) => {
-    if (lastCaptureId == null) return;
-    const update: Partial<Pick<LocalCapture, 'notes' | 'audioBlob'>> = {};
-    if (notes) update.notes = notes;
-    if (audioBlob) update.audioBlob = audioBlob;
-    if (Object.keys(update).length > 0) {
-      await db.captures.update(lastCaptureId, update);
-    }
-    setShowModal(false);
-    setLastCaptureId(null);
-    await loadCaptures();
-  };
-
-  const handleNoteSkip = () => {
-    setShowModal(false);
-    setLastCaptureId(null);
   };
 
   const handleProcessAll = async () => {
@@ -456,11 +300,6 @@ export default function CapturePage() {
           </div>
         </div>
       </div>
-
-      {/* Quick Note Modal */}
-      {showModal && (
-        <QuickNoteModal onSave={handleNoteSave} onSkip={handleNoteSkip} />
-      )}
 
       <BottomNav />
     </div>
