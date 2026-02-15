@@ -101,6 +101,9 @@ export async function syncCapture(captureId: number): Promise<void> {
     }
 
     // --- Step 3: Extract contact info from photo ---
+    // Skip if we already have extracted data from a previous sync (prevents
+    // duplicate OpenRouter calls on re-sync / retry / reconnect).
+    const hasExistingExtraction = !!(capture.name || capture.company || capture.email || capture.title);
     let extractedData: {
       name?: string;
       title?: string;
@@ -109,7 +112,7 @@ export async function syncCapture(captureId: number): Promise<void> {
       phone?: string;
       notes?: string;
     } = {};
-    if (photoUrl) {
+    if (photoUrl && !hasExistingExtraction) {
       try {
         const res = await fetchWithRetry('/api/extract', {
           method: 'POST',

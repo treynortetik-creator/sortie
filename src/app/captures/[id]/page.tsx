@@ -101,12 +101,18 @@ export default function CaptureDetailPage(): React.ReactNode {
 
   const handleVoiceRecordingComplete = async (blob: Blob, duration?: number) => {
     if (!capture?.id) return;
+    // Clear old audioUrl + transcription so sync pipeline re-uploads the new
+    // blob and re-transcribes instead of keeping stale data.
     await db.captures.update(capture.id, {
       audioBlob: blob,
       audioDuration: duration,
+      audioUrl: undefined,
+      audioTranscription: undefined,
+      transcriptionSource: undefined,
     });
     if (audioUrl) URL.revokeObjectURL(audioUrl);
     setAudioUrl(URL.createObjectURL(blob));
+    setTranscription('');
     setShowVoiceRecorder(false);
     toast('Voice note saved', 'success');
 
