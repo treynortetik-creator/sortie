@@ -8,7 +8,7 @@ Lead Capture Mission Control — a mobile-first PWA for capturing leads at Safel
 - **Styling:** Tailwind CSS v4 (NOT v3 — no tailwind.config.js, uses CSS-based config)
 - **Auth & DB:** Supabase (PostgreSQL + Auth + Storage + RLS)
 - **Local Storage:** Dexie (IndexedDB) for offline-first
-- **AI:** Anthropic Claude API (vision extraction + email drafting), OpenAI Whisper (transcription)
+- **AI:** OpenRouter (vision extraction + email drafting), OpenAI Whisper (transcription)
 - **PWA:** Custom service worker, stale-while-revalidate
 - **Deployment Target:** Railway (NOT Vercel)
 
@@ -27,9 +27,9 @@ Lead Capture Mission Control — a mobile-first PWA for capturing leads at Safel
 2. Optional voice note → also stored locally
 3. When online, sync pipeline processes each capture:
    - Upload photo/audio to Supabase Storage
-   - `/api/extract` (Claude Vision) → contact extraction
+   - `/api/extract` (OpenRouter vision) → contact extraction
    - `/api/transcribe` (Whisper) → audio transcription
-   - `/api/draft-email` (Claude) → follow-up email
+   - `/api/draft-email` (OpenRouter) → follow-up email
    - Insert into Supabase PostgreSQL
 4. Local record updated with extracted data + `ready` status
 
@@ -61,6 +61,7 @@ Lead Capture Mission Control — a mobile-first PWA for capturing leads at Safel
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-ANTHROPIC_API_KEY=
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=           # optional, defaults to anthropic/claude-sonnet-4-20250514
 OPENAI_API_KEY=
 ```

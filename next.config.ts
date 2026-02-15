@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' blob: data: *.supabase.co",
               "media-src 'self' blob: *.supabase.co",
-              "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com",
+              "connect-src 'self' *.supabase.co openrouter.ai api.openai.com",
               "font-src 'self'",
               "frame-ancestors 'none'",
             ].join("; "),

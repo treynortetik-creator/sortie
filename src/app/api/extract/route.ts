@@ -3,13 +3,12 @@ import { extractRequestSchema, extractedContactSchema } from "@/lib/schemas";
 import { getAuthenticatedUser } from "@/lib/api-auth";
 import { rateLimit } from "@/lib/rate-limit";
 
-interface AnthropicContentBlock {
-  type: "text" | "tool_use";
-  text?: string;
+interface OpenRouterChoice {
+  message: { role: string; content: string };
 }
 
-interface AnthropicMessagesResponse {
-  content: AnthropicContentBlock[];
+interface OpenRouterResponse {
+  choices: OpenRouterChoice[];
 }
 
 // 20 extractions per user per minute
@@ -52,48 +51,50 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const { photoUrl } = parsed.data;
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY is not configured" },
+        { error: "OPENROUTER_API_KEY is not configured" },
         { status: 500 }
       );
     }
 
+    const model = process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4-20250514";
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
+          "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": "https://sortie.app",
+          "X-Title": "Sortie",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model,
           max_tokens: 1024,
-          system:
-            "You are an expert at reading business cards, name badges, and event lanyards. " +
-            "Extract contact information and return ONLY a JSON object with these fields: name, company, email, phone. " +
-            "Rules:\n" +
-            "- If a field is not visible or legible, set it to an empty string.\n" +
-            "- For partially visible text, make your best guess and include it.\n" +
-            "- Handle non-English names and companies (transliterate to Latin if needed).\n" +
-            "- If the image is blurry or upside-down, still attempt extraction.\n" +
-            "- Clean up formatting: trim whitespace, capitalize names properly, format phone numbers.\n" +
-            "- Return raw JSON only, no markdown fences or explanation.",
           messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert at reading business cards, name badges, and event lanyards. " +
+                "Extract contact information and return ONLY a JSON object with these fields: name, company, email, phone. " +
+                "Rules:\n" +
+                "- If a field is not visible or legible, set it to an empty string.\n" +
+                "- For partially visible text, make your best guess and include it.\n" +
+                "- Handle non-English names and companies (transliterate to Latin if needed).\n" +
+                "- If the image is blurry or upside-down, still attempt extraction.\n" +
+                "- Clean up formatting: trim whitespace, capitalize names properly, format phone numbers.\n" +
+                "- Return raw JSON only, no markdown fences or explanation.",
+            },
             {
               role: "user",
               content: [
                 {
-                  type: "image",
-                  source: {
-                    type: "url",
-                    url: photoUrl,
-                  },
+                  type: "image_url",
+                  image_url: { url: photoUrl },
                 },
                 {
                   type: "text",
@@ -108,19 +109,15 @@ export async function POST(request: Request): Promise<NextResponse> {
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error("Anthropic API error:", response.status, errorBody);
+        console.error("OpenRouter API error:", response.status, errorBody);
         return NextResponse.json(
-          { error: "Failed to process image with Claude API" },
+          { error: "Failed to process image with AI API" },
           { status: 502 }
         );
       }
 
-      const data: AnthropicMessagesResponse = await response.json();
-
-      const textBlock = data.content?.find(
-        (block) => block.type === "text"
-      );
-      const rawText = textBlock?.text ?? "";
+      const data: OpenRouterResponse = await response.json();
+      const rawText = data.choices?.[0]?.message?.content ?? "";
 
       // Try to find JSON in code fences first, then bare JSON object
       const fenceMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
