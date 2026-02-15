@@ -5,15 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
+import Link from 'next/link';
 import CaptureCard from '@/components/CaptureCard';
 import BottomNav from '@/components/BottomNav';
+import { useToast } from '@/components/Toast';
 
 export default function CapturesPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [captures, setCaptures] = useState<LocalCapture[]>([]);
   const [events, setEvents] = useState<string[]>([]);
   const [filterEvent, setFilterEvent] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [processing, setProcessing] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +43,10 @@ export default function CapturesPage() {
         .sortBy('createdAt');
     }
 
+    if (filterStatus !== 'all') {
+      results = results.filter((c) => c.status === filterStatus);
+    }
+
     setCaptures(results);
 
     const allCaptures = await db.captures
@@ -47,7 +55,7 @@ export default function CapturesPage() {
     const uniqueEvents = [...new Set(allCaptures.map((c) => c.event))];
     setEvents(uniqueEvents);
     setLoading(false);
-  }, [user, filterEvent]);
+  }, [user, filterEvent, filterStatus]);
 
   useEffect(() => {
     loadCaptures(); // eslint-disable-line react-hooks/set-state-in-effect -- loading data from IndexedDB
@@ -67,6 +75,7 @@ export default function CapturesPage() {
     }
     await loadCaptures();
     setProcessing(false);
+    toast(`Processed ${unsynced.length} capture${unsynced.length === 1 ? '' : 's'}`, 'success');
   };
 
   const hasUnsynced = captures.some((c) => c.status === 'captured');
@@ -75,10 +84,10 @@ export default function CapturesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
+      <div className="min-h-screen bg-olive-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#3d4a2a] border-t-[#8b956d] rounded-full animate-spin" />
-          <p className="text-[#8b956d] text-sm">Loading captures…</p>
+          <div className="w-8 h-8 border-2 border-olive-700 border-t-olive-muted rounded-full animate-spin" />
+          <p className="text-olive-muted text-sm">Loading captures…</p>
         </div>
         <BottomNav />
       </div>
@@ -86,24 +95,24 @@ export default function CapturesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1f16]">
+    <div className="min-h-screen bg-olive-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1a1f16] border-b border-[#3d4a2a] px-4 py-3">
+      <div className="sticky top-0 z-10 bg-olive-900 border-b border-olive-700 px-4 py-3">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-bold text-[#c8d5a3] tracking-wide">
+          <h1 className="text-lg font-bold text-olive-text tracking-wide">
             All Captures
           </h1>
-          <span className="text-[#8b956d] text-sm">
+          <span className="text-olive-muted text-sm">
             {captures.length} total
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <select
             value={filterEvent}
             onChange={(e) => setFilterEvent(e.target.value)}
             aria-label="Filter by event"
-            className="flex-1 bg-[#2d331f] border border-[#3d4a2a] rounded-lg px-4 py-3 text-[#c8d5a3] text-sm focus:outline-none focus:border-[#4a5d23]"
+            className="flex-1 bg-olive-800 border border-olive-700 rounded-lg px-3 py-3 text-olive-text text-sm focus:outline-none focus:border-olive-600"
           >
             <option value="all">All Events</option>
             {events.map((ev) => (
@@ -113,12 +122,26 @@ export default function CapturesPage() {
             ))}
           </select>
 
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            aria-label="Filter by status"
+            className="bg-olive-800 border border-olive-700 rounded-lg px-3 py-3 text-olive-text text-sm focus:outline-none focus:border-olive-600"
+          >
+            <option value="all">All Status</option>
+            <option value="captured">Captured</option>
+            <option value="processing">Processing</option>
+            <option value="ready">Ready</option>
+            <option value="needs_review">Needs Review</option>
+            <option value="error">Error</option>
+          </select>
+
           {hasUnsynced && (
             <button
               onClick={handleProcessAll}
               disabled={processing}
               aria-label="Process all unsynced captures"
-              className="bg-[#e8c547]/20 text-[#e8c547] text-xs uppercase tracking-wider font-semibold px-4 py-3 rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap active:scale-95"
+              className="bg-gold/20 text-gold text-xs uppercase tracking-wider font-semibold px-4 py-3 rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap active:scale-95"
             >
               {processing ? 'Processing...' : 'Process All'}
             </button>
@@ -129,11 +152,18 @@ export default function CapturesPage() {
       {/* Capture List */}
       <div className="px-4 py-3 space-y-3 scroll-container" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         {captures.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-[#8b956d] text-lg mb-2">No captures yet</p>
-            <p className="text-[#8b956d]/60 text-sm">
-              Start capturing leads from the capture screen
+          <div className="text-center py-20 space-y-4">
+            <div className="text-5xl">📷</div>
+            <p className="text-olive-muted text-lg font-medium">No captures yet</p>
+            <p className="text-olive-muted/60 text-sm max-w-xs mx-auto">
+              Snap a photo of a business card or badge to start capturing leads
             </p>
+            <Link
+              href="/capture"
+              className="inline-block bg-olive-600 hover:bg-olive-500 text-olive-text font-semibold uppercase tracking-wider text-sm px-6 py-3 rounded-lg transition-colors active:scale-95"
+            >
+              Start Capturing
+            </Link>
           </div>
         ) : (
           captures.map((cap) => (

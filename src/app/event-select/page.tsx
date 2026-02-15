@@ -72,8 +72,8 @@ export default function EventSelectPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#1a1f16] flex items-center justify-center">
-        <p className="text-[#8b956d]">Loading...</p>
+      <div className="min-h-screen bg-olive-900 flex items-center justify-center">
+        <p className="text-olive-muted">Loading...</p>
       </div>
     );
   }
@@ -81,22 +81,22 @@ export default function EventSelectPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#1a1f16] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-olive-900 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-lg">
         <div className="text-center mb-10">
-          <h1 className="text-2xl font-bold text-[#c8d5a3] mb-2">
+          <h1 className="text-2xl font-bold text-olive-text mb-2">
             What event are you at today?
           </h1>
-          <p className="text-[#8b956d] text-sm">
+          <p className="text-olive-muted text-sm">
             Enter or select your current mission location
           </p>
         </div>
 
-        <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-8 space-y-6">
+        <div className="bg-olive-800 border border-olive-700 rounded-lg p-8 space-y-6">
           <div className="relative">
             <label
               htmlFor="event-name"
-              className="block text-[#8b956d] text-xs uppercase tracking-wider mb-2"
+              className="block text-olive-muted text-xs uppercase tracking-wider mb-2"
             >
               Event Name
             </label>
@@ -111,7 +111,7 @@ export default function EventSelectPage() {
                 setShowDropdown(true);
               }}
               onFocus={() => setShowDropdown(true)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-4 py-3 text-[#c8d5a3] placeholder-[#8b956d]/50 focus:outline-none focus:border-[#4a5d23] focus:ring-1 focus:ring-[#4a5d23] transition-colors"
+              className="w-full bg-olive-900 border border-olive-700 rounded px-4 py-3 text-olive-text placeholder-olive-muted/50 focus:outline-none focus:border-olive-600 focus:ring-1 focus:ring-olive-600 transition-colors"
               placeholder="e.g. CES 2026, AWS re:Invent"
               autoComplete="off"
               enterKeyHint="go"
@@ -121,7 +121,7 @@ export default function EventSelectPage() {
               <div
                 ref={dropdownRef}
                 role="listbox"
-                className="absolute z-10 mt-1 w-full bg-[#2d331f] border border-[#3d4a2a] rounded-lg shadow-xl max-h-48 overflow-y-auto"
+                className="absolute z-10 mt-1 w-full bg-olive-800 border border-olive-700 rounded-lg shadow-xl max-h-48 overflow-y-auto"
               >
                 {filteredEvents.map((ev) => (
                   <button
@@ -130,7 +130,7 @@ export default function EventSelectPage() {
                     role="option"
                     aria-selected={eventName === ev}
                     onClick={() => selectEvent(ev)}
-                    className="w-full text-left px-4 py-3.5 text-[#c8d5a3] hover:bg-[#4a5d23]/30 transition-colors border-b border-[#3d4a2a] last:border-b-0"
+                    className="w-full text-left px-4 py-3.5 text-olive-text hover:bg-olive-600/30 transition-colors border-b border-olive-700 last:border-b-0"
                   >
                     {ev}
                   </button>
@@ -142,7 +142,7 @@ export default function EventSelectPage() {
           <button
             onClick={handleBeginMission}
             disabled={!eventName.trim()}
-            className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-40 disabled:cursor-not-allowed text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3.5 rounded transition-colors active:scale-[0.98]"
+            className="w-full bg-olive-600 hover:bg-olive-500 disabled:opacity-40 disabled:cursor-not-allowed text-olive-text font-semibold uppercase tracking-wider text-sm py-3.5 rounded transition-colors active:scale-[0.98]"
           >
             Begin Mission
           </button>
@@ -150,7 +150,7 @@ export default function EventSelectPage() {
 
         {eventHistory.length > 0 && (
           <div className="mt-6">
-            <p className="text-[#8b956d] text-xs uppercase tracking-wider mb-3">
+            <p className="text-olive-muted text-xs uppercase tracking-wider mb-3">
               Recent Missions
             </p>
             <div className="flex flex-wrap gap-2.5">
@@ -161,7 +161,7 @@ export default function EventSelectPage() {
                     setEventName(ev);
                     setShowDropdown(false);
                   }}
-                  className="bg-[#2d331f] border border-[#3d4a2a] text-[#8b956d] hover:text-[#c8d5a3] hover:border-[#4a5d23] text-sm px-4 py-2.5 rounded transition-colors active:scale-95"
+                  className="bg-olive-800 border border-olive-700 text-olive-muted hover:text-olive-text hover:border-olive-600 text-sm px-4 py-2.5 rounded transition-colors active:scale-95"
                 >
                   {ev}
                 </button>

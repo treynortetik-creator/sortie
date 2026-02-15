@@ -30,13 +30,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1f16] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-olive-900 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <h1 className="text-5xl font-bold tracking-[0.3em] text-[#e8c547] mb-2">
+          <h1 className="text-5xl font-bold tracking-[0.3em] text-gold mb-2">
             SORTIE
           </h1>
-          <p className="text-[#8b956d] text-sm tracking-widest uppercase">
+          <p className="text-olive-muted text-sm tracking-widest uppercase">
             Lead Capture Mission Control
           </p>
         </div>
@@ -44,7 +44,7 @@ export default function LoginPage() {
         <form
           aria-label="Sign in"
           onSubmit={handleSubmit}
-          className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg p-8 space-y-6"
+          className="bg-olive-800 border border-olive-700 rounded-lg p-8 space-y-6"
         >
           {error && (
             <div role="alert" className="bg-red-900/40 border border-red-700/50 text-red-300 text-sm rounded px-4 py-3">
@@ -55,7 +55,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="email"
-              className="block text-[#8b956d] text-xs uppercase tracking-wider mb-2"
+              className="block text-olive-muted text-xs uppercase tracking-wider mb-2"
             >
               Email
             </label>
@@ -69,7 +69,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-4 py-3 text-[#c8d5a3] placeholder-[#8b956d]/50 focus:outline-none focus:border-[#4a5d23] focus:ring-1 focus:ring-[#4a5d23] transition-colors"
+              className="w-full bg-olive-900 border border-olive-700 rounded px-4 py-3 text-olive-text placeholder-olive-muted/50 focus:outline-none focus:border-olive-600 focus:ring-1 focus:ring-olive-600 transition-colors"
               placeholder="operator@sortie.app"
             />
           </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="block text-[#8b956d] text-xs uppercase tracking-wider mb-2"
+              className="block text-olive-muted text-xs uppercase tracking-wider mb-2"
             >
               Password
             </label>
@@ -88,7 +88,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#1a1f16] border border-[#3d4a2a] rounded px-4 py-3 text-[#c8d5a3] placeholder-[#8b956d]/50 focus:outline-none focus:border-[#4a5d23] focus:ring-1 focus:ring-[#4a5d23] transition-colors"
+              className="w-full bg-olive-900 border border-olive-700 rounded px-4 py-3 text-olive-text placeholder-olive-muted/50 focus:outline-none focus:border-olive-600 focus:ring-1 focus:ring-olive-600 transition-colors"
               placeholder="••••••••"
             />
           </div>
@@ -96,13 +96,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#4a5d23] hover:bg-[#5a7028] disabled:opacity-50 disabled:cursor-not-allowed text-[#c8d5a3] font-semibold uppercase tracking-wider text-sm py-3.5 rounded transition-colors active:scale-[0.98]"
+            className="w-full bg-olive-600 hover:bg-olive-500 disabled:opacity-50 disabled:cursor-not-allowed text-olive-text font-semibold uppercase tracking-wider text-sm py-3.5 rounded transition-colors active:scale-[0.98]"
           >
             {loading ? 'Authenticating...' : 'Log In'}
           </button>
         </form>
 
-        <p className="text-center text-[#8b956d]/50 text-xs mt-8">
+        <p className="text-center text-olive-muted/50 text-xs mt-8">
           Sortie v1.0 — Secure Access Only
         </p>
       </div>

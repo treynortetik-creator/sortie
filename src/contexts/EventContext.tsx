@@ -21,16 +21,11 @@ interface EventContextValue {
 const EventContext = createContext<EventContextValue | undefined>(undefined);
 
 export function EventProvider({ children }: { children: ReactNode }) {
-  const [currentEvent, setCurrentEventState] = useState<string>('');
+  const [currentEvent, setCurrentEventState] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem(LOCAL_STORAGE_KEY) || '';
+  });
   const [eventHistory, setEventHistory] = useState<string[]>([]);
-
-  // Load persisted current event from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (stored) {
-      setCurrentEventState(stored);
-    }
-  }, []);
 
   // Load event history from Dexie db
   useEffect(() => {

@@ -69,6 +69,15 @@ class SortieDB extends Dexie {
       profiles: '++id, userId',
       settings: 'key',
     });
+
+    // v2: Add updatedAt index for sync ordering.
+    // No schema change needed — just adding the index.
+    this.version(2).stores({
+      captures: '++id, remoteId, userId, event, status, createdAt, syncedAt, updatedAt',
+      events: '++id, remoteId, userId, name, date, lastUsed',
+      profiles: '++id, userId',
+      settings: 'key',
+    });
   }
 }
 

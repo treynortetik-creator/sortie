@@ -1,89 +1,160 @@
 import { NextResponse } from "next/server";
+import { extractRequestSchema, extractedContactSchema } from "@/lib/schemas";
+import { getAuthenticatedUser } from "@/lib/api-auth";
+import { rateLimit } from "@/lib/rate-limit";
 
-export async function POST(request: Request) {
+interface OpenRouterChoice {
+  message: { role: string; content: string };
+}
+
+interface OpenRouterResponse {
+  choices: OpenRouterChoice[];
+}
+
+// 20 extractions per user per minute
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW = 60_000;
+
+export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const { photoUrl } = await request.json();
-
-    if (!photoUrl) {
+    // Auth check
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
       return NextResponse.json(
-        { error: "photoUrl is required" },
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Rate limiting
+    const { allowed, retryAfterMs } = rateLimit(
+      `extract:${user.id}`,
+      RATE_LIMIT_MAX,
+      RATE_LIMIT_WINDOW,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+      );
+    }
+
+    const body: unknown = await request.json();
+    const parsed = extractRequestSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? "Invalid request" },
         { status: 400 }
       );
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const { photoUrl } = parsed.data;
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY is not configured" },
+        { error: "OPENROUTER_API_KEY is not configured" },
         { status: 500 }
       );
     }
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        system:
-          "Extract contact information from this business card or name badge image. Return JSON with fields: name, company, email, phone. If a field is not visible, omit it.",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "url",
-                  url: photoUrl,
-                },
-              },
-              {
-                type: "text",
-                text: "Extract the contact information from this image and return it as JSON.",
-              },
-            ],
-          },
-        ],
-      }),
-    });
+    const model = process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4-20250514";
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error("Anthropic API error:", response.status, errorBody);
-      return NextResponse.json(
-        { error: "Failed to process image with Claude API" },
-        { status: 502 }
-      );
-    }
-
-    const data = await response.json();
-
-    const textBlock = data.content?.find(
-      (block: { type: string }) => block.type === "text"
-    );
-    const rawText = textBlock?.text ?? "";
-
-    // Extract JSON from the response text (may be wrapped in markdown code fences)
-    let extracted: Record<string, string>;
     try {
-      const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
-      const jsonString = jsonMatch ? jsonMatch[1].trim() : rawText.trim();
-      extracted = JSON.parse(jsonString);
-    } catch {
-      console.error("Failed to parse JSON from Claude response:", rawText);
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": "https://sortie.app",
+          "X-Title": "Sortie",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1024,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert at reading business cards, name badges, and event lanyards. " +
+                "Extract contact information and return ONLY a JSON object with these fields: name, company, email, phone. " +
+                "Rules:\n" +
+                "- If a field is not visible or legible, set it to an empty string.\n" +
+                "- For partially visible text, make your best guess and include it.\n" +
+                "- Handle non-English names and companies (transliterate to Latin if needed).\n" +
+                "- If the image is blurry or upside-down, still attempt extraction.\n" +
+                "- Clean up formatting: trim whitespace, capitalize names properly, format phone numbers.\n" +
+                "- Return raw JSON only, no markdown fences or explanation.",
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: { url: photoUrl },
+                },
+                {
+                  type: "text",
+                  text: "Extract the contact information from this image. Return only a JSON object with: name, company, email, phone.",
+                },
+              ],
+            },
+          ],
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error("OpenRouter API error:", response.status, errorBody);
+        return NextResponse.json(
+          { error: "Failed to process image with AI API" },
+          { status: 502 }
+        );
+      }
+
+      const data: OpenRouterResponse = await response.json();
+      const rawText = data.choices?.[0]?.message?.content ?? "";
+
+      // Try to find JSON in code fences first, then bare JSON object
+      const fenceMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
+      const objectMatch = rawText.match(/\{[\s\S]*\}/);
+      const jsonString = fenceMatch ? fenceMatch[1].trim() : objectMatch ? objectMatch[0].trim() : rawText.trim();
+
+      let jsonParsed: unknown;
+      try {
+        jsonParsed = JSON.parse(jsonString);
+      } catch {
+        console.error("Failed to parse JSON from Claude response:", rawText);
+        return NextResponse.json(
+          { error: "Failed to parse extracted contact information" },
+          { status: 500 }
+        );
+      }
+
+      const validated = extractedContactSchema.safeParse(jsonParsed);
+      if (!validated.success) {
+        console.error("Extracted data validation failed:", validated.error);
+        return NextResponse.json(
+          { error: "Extracted data did not match expected format" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(validated.data);
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return NextResponse.json(
-        { error: "Failed to parse extracted contact information" },
-        { status: 500 }
+        { error: "Request timed out" },
+        { status: 504 }
       );
     }
-
-    return NextResponse.json(extracted);
-  } catch (error) {
     console.error("Extract API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

@@ -4,10 +4,11 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
+  useRef,
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
+import { syncAllCaptures } from '@/lib/sync';
 
 interface ConnectionContextValue {
   isOnline: boolean;
@@ -40,6 +41,21 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
     getSnapshot,
     getServerSnapshot
   );
+  const wasOfflineRef = useRef(false);
+
+  useEffect(() => {
+    if (!isOnline) {
+      wasOfflineRef.current = true;
+      return;
+    }
+    // Auto-sync unprocessed captures when coming back online
+    if (wasOfflineRef.current) {
+      wasOfflineRef.current = false;
+      syncAllCaptures().catch((err) => {
+        console.error('Auto-sync on reconnect failed:', err);
+      });
+    }
+  }, [isOnline]);
 
   return (
     <ConnectionContext.Provider value={{ isOnline }}>

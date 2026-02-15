@@ -21,8 +21,8 @@ export default function Home() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <h1 className="stencil text-3xl text-[#e8c547] mb-2">Sortie</h1>
-        <p className="text-[#8b956d]">Initializing mission...</p>
+        <h1 className="stencil text-3xl text-gold mb-2">Sortie</h1>
+        <p className="text-olive-muted">Initializing mission...</p>
       </div>
     </div>
   );

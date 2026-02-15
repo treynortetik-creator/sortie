@@ -33,10 +33,10 @@ export default function CaptureCard({ capture }: CaptureCardProps) {
 
   return (
     <Link href={`/captures/${capture.id}`} aria-label={`View capture${capture.name ? `: ${capture.name}` : ` ${formattedTime}`}`} className="block active:scale-[0.98] transition-transform">
-      <div className="bg-[#2d331f] border border-[#3d4a2a] rounded-lg overflow-hidden hover:border-[#4a5d23] active:bg-[#353d25] transition-colors">
+      <div className="bg-olive-800 border border-olive-700 rounded-lg overflow-hidden hover:border-olive-600 active:bg-[#353d25] transition-colors">
         <div className="flex gap-3 p-4">
           {thumbnailUrl ? (
-            <div className="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-[#1a1f16]">
+            <div className="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-olive-900">
               {/* eslint-disable-next-line @next/next/no-img-element -- blob URL from IndexedDB */}
               <img
                 src={thumbnailUrl}
@@ -45,8 +45,8 @@ export default function CaptureCard({ capture }: CaptureCardProps) {
               />
             </div>
           ) : (
-            <div className="w-14 h-14 flex-shrink-0 rounded-lg bg-[#1a1f16] flex items-center justify-center">
-              <span className="text-[#8b956d] text-2xl">📷</span>
+            <div className="w-14 h-14 flex-shrink-0 rounded-lg bg-olive-900 flex items-center justify-center">
+              <span className="text-olive-muted text-2xl">📷</span>
             </div>
           )}
 
@@ -54,12 +54,12 @@ export default function CaptureCard({ capture }: CaptureCardProps) {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 {capture.name && (
-                  <p className="text-[#c8d5a3] font-medium text-[0.9375rem] leading-snug truncate">
+                  <p className="text-olive-text font-medium text-[0.9375rem] leading-snug truncate">
                     {capture.name}
                   </p>
                 )}
                 {capture.event && (
-                  <p className="text-[#8b956d] text-xs truncate mt-0.5">
+                  <p className="text-olive-muted text-xs truncate mt-0.5">
                     {capture.event}
                   </p>
                 )}
@@ -67,7 +67,7 @@ export default function CaptureCard({ capture }: CaptureCardProps) {
               <StatusBadge status={capture.status} />
             </div>
 
-            <p className="text-[#8b956d] text-xs mt-1">{formattedTime}</p>
+            <p className="text-olive-muted text-xs mt-1">{formattedTime}</p>
           </div>
         </div>
       </div>
