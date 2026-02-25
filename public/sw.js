@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sortie-v3';
+const CACHE_NAME = 'sortie-v4';
 const STATIC_ASSETS = [
   '/',
   '/login',
@@ -36,9 +36,14 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests (POST to API routes, etc.)
   if (request.method !== 'GET') return;
 
-  // Skip API routes and Supabase calls — always go to network
+  // Skip API routes and third-party service calls — always go to network
   const url = new URL(request.url);
-  if (url.pathname.startsWith('/api/') || url.hostname.includes('supabase')) return;
+  if (
+    url.pathname.startsWith('/api/') ||
+    url.hostname.includes('supabase') ||
+    url.hostname.includes('openrouter.ai') ||
+    url.hostname.includes('openai.com')
+  ) return;
 
   // Skip non-http schemes
   if (!request.url.startsWith('http')) return;

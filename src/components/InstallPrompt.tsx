@@ -9,32 +9,34 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISSED_KEY = 'sortie_install_dismissed';
 
+function detectIsIOS(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPhone|iPad|iPod/.test(navigator.userAgent);
+}
+
+function shouldShowPrompt(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (localStorage.getItem(DISMISSED_KEY)) return false;
+  if (window.matchMedia('(display-mode: standalone)').matches) return false;
+  if ('standalone' in navigator && (navigator as Record<string, unknown>).standalone) return false;
+  if (window.innerWidth > 768) return false;
+  return true;
+}
+
 export function InstallPrompt(): React.ReactNode {
-  const [show, setShow] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const isIOS = detectIsIOS();
+  const [show, setShow] = useState<boolean>(() => {
+    // On iOS, we can show immediately if conditions are met (no install prompt event needed)
+    if (!shouldShowPrompt()) return false;
+    return isIOS;
+  });
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    // Don't show if already dismissed or already installed
-    if (localStorage.getItem(DISMISSED_KEY)) return;
-    if (window.matchMedia('(display-mode: standalone)').matches) return;
-    if ('standalone' in navigator && (navigator as Record<string, unknown>).standalone) return;
+    // On non-iOS, we wait for the beforeinstallprompt event
+    if (isIOS) return;
+    if (!shouldShowPrompt()) return;
 
-    // Only show on mobile viewports
-    if (window.innerWidth > 768) return;
-
-    // Detect iOS
-    const ua = navigator.userAgent;
-    const isiOS = /iPhone|iPad|iPod/.test(ua);
-    setIsIOS(isiOS);
-
-    if (isiOS) {
-      // iOS doesn't have beforeinstallprompt — show instructions directly
-      setShow(true);
-      return;
-    }
-
-    // Chrome/Android: listen for the install prompt event
     const handler = (e: Event) => {
       e.preventDefault();
       deferredPromptRef.current = e as BeforeInstallPromptEvent;
@@ -43,7 +45,7 @@ export function InstallPrompt(): React.ReactNode {
 
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isIOS]);
 
   const handleInstall = async () => {
     if (deferredPromptRef.current) {
@@ -73,7 +75,8 @@ export function InstallPrompt(): React.ReactNode {
             </p>
             {isIOS ? (
               <p className="text-olive-muted text-xs mt-1">
-                Tap <span className="text-olive-text">Share</span> then <span className="text-olive-text">Add to Home Screen</span>
+                Tap <span className="text-olive-text">Share</span> then{' '}
+                <span className="text-olive-text">Add to Home Screen</span>
               </p>
             ) : (
               <p className="text-olive-muted text-xs mt-1">

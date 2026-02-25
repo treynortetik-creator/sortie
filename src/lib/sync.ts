@@ -21,7 +21,7 @@ async function fetchWithRetry(
   for (let attempt = 0; attempt <= retries; attempt++) {
     const res = await fetch(url, options);
     // Retry on 5xx or 429 (rate limit), not on 4xx client errors
-    if (res.ok || res.status < 500 && res.status !== 429) {
+    if (res.ok || (res.status < 500 && res.status !== 429)) {
       return res;
     }
     if (attempt < retries) {
@@ -242,15 +242,21 @@ export async function syncCapture(captureId: number): Promise<void> {
   }
 }
 
+/** Max concurrent syncs — keeps upload parallelism without flooding the API. */
+const SYNC_CONCURRENCY = 3;
+
 export async function syncAllCaptures(): Promise<void> {
   const unsynced = await db.captures
     .where('status')
     .anyOf(['captured', 'error', 'needs_review'])
     .toArray();
 
-  for (const capture of unsynced) {
-    if (capture.id) {
-      await syncCapture(capture.id);
-    }
+  const ids = unsynced.map((c) => c.id).filter((id): id is number => id !== undefined);
+  if (ids.length === 0) return;
+
+  // Process up to SYNC_CONCURRENCY captures at a time
+  for (let i = 0; i < ids.length; i += SYNC_CONCURRENCY) {
+    const batch = ids.slice(i, i + SYNC_CONCURRENCY);
+    await Promise.allSettled(batch.map((id) => syncCapture(id)));
   }
 }

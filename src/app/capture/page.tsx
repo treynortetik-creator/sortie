@@ -49,7 +49,8 @@ export default function CapturePage() {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setCameraReady(true);
+        // Wait for the first frame before allowing capture
+        videoRef.current.oncanplay = () => setCameraReady(true);
       }
     } catch (err) {
       console.error('Camera access failed:', err);
@@ -72,7 +73,23 @@ export default function CapturePage() {
   useEffect(() => {
     startCamera(); // eslint-disable-line react-hooks/set-state-in-effect -- initializing camera on mount
 
+    // Stop camera when page is hidden (phone lock / app switch) to save battery,
+    // restart when the page becomes visible again.
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((t) => t.stop());
+          streamRef.current = null;
+          setCameraReady(false);
+        }
+      } else {
+        startCamera();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
@@ -87,15 +104,21 @@ export default function CapturePage() {
       .sortBy('createdAt');
     setCaptures(all);
 
-    const urls: Record<number, string> = {};
+    const blobUrls: Record<number, string> = {};
     for (const cap of all) {
       if (cap.id && cap.imageBlob) {
-        urls[cap.id] = URL.createObjectURL(cap.imageBlob);
+        blobUrls[cap.id] = URL.createObjectURL(cap.imageBlob);
+      } else if (cap.id && cap.photoUrl) {
+        // Use remote URL once blob has been cleared after sync
+        blobUrls[cap.id] = cap.photoUrl;
       }
     }
     setThumbnailUrls((prev) => {
-      Object.values(prev).forEach((u) => URL.revokeObjectURL(u));
-      return urls;
+      // Only revoke blob: URLs (not https: Supabase URLs)
+      Object.values(prev).forEach((u) => {
+        if (u.startsWith('blob:')) URL.revokeObjectURL(u);
+      });
+      return blobUrls;
     });
   }, [user, currentEvent]);
 
@@ -130,9 +153,10 @@ export default function CapturePage() {
     );
     if (!blob) return;
 
-    // Flash feedback
+    // Flash + haptic feedback
     setCaptureFlash(true);
     setTimeout(() => setCaptureFlash(false), 150);
+    if ('vibrate' in navigator) navigator.vibrate(30);
 
     const id = await db.captures.add({
       userId: user.id,

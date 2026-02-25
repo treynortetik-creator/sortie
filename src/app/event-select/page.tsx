@@ -111,6 +111,12 @@ export default function EventSelectPage() {
                 setShowDropdown(true);
               }}
               onFocus={() => setShowDropdown(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && eventName.trim()) {
+                  setShowDropdown(false);
+                  void handleBeginMission();
+                }
+              }}
               className="w-full bg-olive-900 border border-olive-700 rounded px-4 py-3 text-olive-text placeholder-olive-muted/50 focus:outline-none focus:border-olive-600 focus:ring-1 focus:ring-olive-600 transition-colors"
               placeholder="e.g. CES 2026, AWS re:Invent"
               autoComplete="off"
