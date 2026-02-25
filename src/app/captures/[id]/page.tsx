@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { liveQuery } from 'dexie';
 import { db, type LocalCapture } from '@/lib/db';
 import { syncCapture } from '@/lib/sync';
 import StatusBadge from '@/components/StatusBadge';
@@ -34,6 +35,10 @@ export default function CaptureDetailPage(): React.ReactNode {
   const [saved, setSaved] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Track whether the user has manually edited a field to avoid overwriting
+  // their in-progress edits when the background sync updates the record.
+  const userEditedRef = useRef(false);
 
   const loadCapture = useCallback(async () => {
     try {
@@ -81,6 +86,45 @@ export default function CaptureDetailPage(): React.ReactNode {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadCapture]);
+
+  // Live query: watch for background sync updates and refresh status/fields
+  // without overwriting any in-progress user edits.
+  useEffect(() => {
+    if (!captureId) return;
+
+    const subscription = liveQuery(() => db.captures.get(captureId)).subscribe({
+      next(record: LocalCapture | undefined) {
+        if (!record) return;
+        // Always update the capture object (for status badge, error banner, etc.)
+        setCapture(record);
+
+        // Only auto-fill extracted fields if the user hasn't started editing
+        if (!userEditedRef.current) {
+          if (record.name) setName(record.name);
+          if (record.title) setTitle(record.title);
+          if (record.company) setCompany(record.company);
+          if (record.email) setEmail(record.email);
+          if (record.phone) setPhone(record.phone);
+          if (record.notes) setNotes(record.notes);
+          if (record.audioTranscription) setTranscription(record.audioTranscription);
+        }
+
+        // Update image URL if the local blob was cleared but a remote URL exists
+        setImageUrl((prev) => {
+          if (!prev && record.photoUrl) return record.photoUrl;
+          if (!prev && record.imageBlob) return URL.createObjectURL(record.imageBlob);
+          return prev;
+        });
+        setAudioUrl((prev) => {
+          if (!prev && record.audioUrl) return record.audioUrl;
+          if (!prev && record.audioBlob) return URL.createObjectURL(record.audioBlob);
+          return prev;
+        });
+      },
+    });
+
+    return () => subscription.unsubscribe();
+  }, [captureId]);
 
   const handleSave = async () => {
     if (!capture?.id) return;
@@ -266,7 +310,7 @@ export default function CaptureDetailPage(): React.ReactNode {
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { userEditedRef.current = true; setName(e.target.value); }}
               className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="Full name"
             />
@@ -279,7 +323,7 @@ export default function CaptureDetailPage(): React.ReactNode {
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => { userEditedRef.current = true; setTitle(e.target.value); }}
               className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="Job title"
             />
@@ -292,7 +336,7 @@ export default function CaptureDetailPage(): React.ReactNode {
             <input
               type="text"
               value={company}
-              onChange={(e) => setCompany(e.target.value)}
+              onChange={(e) => { userEditedRef.current = true; setCompany(e.target.value); }}
               className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="Company name"
             />
@@ -305,7 +349,7 @@ export default function CaptureDetailPage(): React.ReactNode {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { userEditedRef.current = true; setEmail(e.target.value); }}
               className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="email@example.com"
             />
@@ -318,7 +362,7 @@ export default function CaptureDetailPage(): React.ReactNode {
             <input
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => { userEditedRef.current = true; setPhone(e.target.value); }}
               className="w-full bg-olive-900 border border-olive-700 rounded px-3 py-2 text-olive-text text-sm focus:outline-none focus:border-olive-600"
               placeholder="+1 (555) 000-0000"
             />
