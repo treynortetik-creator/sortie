@@ -53,9 +53,15 @@ export default function CaptureDetailPage(): React.ReactNode {
 
       if (record.imageBlob) {
         setImageUrl(URL.createObjectURL(record.imageBlob));
+      } else if (record.photoUrl) {
+        // Blob cleared after sync — fall back to remote Supabase URL
+        setImageUrl(record.photoUrl);
       }
       if (record.audioBlob) {
         setAudioUrl(URL.createObjectURL(record.audioBlob));
+      } else if (record.audioUrl) {
+        // Audio blob cleared — fall back to remote Supabase URL
+        setAudioUrl(record.audioUrl);
       }
     } catch (err) {
       console.error('Failed to load capture:', err);
@@ -69,8 +75,9 @@ export default function CaptureDetailPage(): React.ReactNode {
     loadCapture();
 
     return () => {
-      if (imageUrl) URL.revokeObjectURL(imageUrl);
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      // Only revoke blob: URLs — https: Supabase URLs must not be revoked
+      if (imageUrl?.startsWith('blob:')) URL.revokeObjectURL(imageUrl);
+      if (audioUrl?.startsWith('blob:')) URL.revokeObjectURL(audioUrl);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadCapture]);
@@ -148,8 +155,25 @@ export default function CaptureDetailPage(): React.ReactNode {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-olive-900 flex items-center justify-center">
-        <p className="text-olive-muted">Loading...</p>
+      <div className="min-h-screen bg-olive-900">
+        {/* Skeleton header */}
+        <div className="sticky top-0 z-10 bg-olive-900 border-b border-olive-700 px-4 py-3 flex items-center justify-between">
+          <div className="h-5 w-14 bg-olive-800 rounded animate-pulse" />
+          <div className="h-5 w-16 bg-olive-800 rounded-full animate-pulse" />
+        </div>
+        <div className="px-4 py-4 space-y-6 max-w-lg mx-auto">
+          {/* Photo skeleton */}
+          <div className="w-full h-48 bg-olive-800 rounded-lg animate-pulse" />
+          {/* Contact info skeleton */}
+          <div className="bg-olive-800 border border-olive-700 rounded-lg p-4 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="space-y-1">
+                <div className="h-3 w-16 bg-olive-700 rounded animate-pulse" />
+                <div className="h-10 bg-olive-900 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

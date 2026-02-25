@@ -18,8 +18,9 @@ export default function CaptureCard({ capture }: CaptureCardProps) {
       setThumbnailUrl(url); // eslint-disable-line react-hooks/set-state-in-effect -- syncing blob URL from IndexedDB
       return () => URL.revokeObjectURL(url);
     }
-    setThumbnailUrl(null);
-  }, [capture.imageBlob]);
+    // Fall back to the remote Supabase URL once the local blob has been cleared
+    setThumbnailUrl(capture.photoUrl ?? null);
+  }, [capture.imageBlob, capture.photoUrl]);
 
   const formattedTime = useMemo(() => {
     const date = new Date(capture.createdAt);
