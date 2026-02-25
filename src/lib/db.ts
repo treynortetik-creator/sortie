@@ -8,7 +8,7 @@ export interface LocalCapture {
   userId: string;
   submitterEmail?: string;
   event: string;
-  imageBlob: Blob;
+  imageBlob?: Blob;
   photoUrl?: string;
   audioBlob?: Blob;
   audioUrl?: string;
