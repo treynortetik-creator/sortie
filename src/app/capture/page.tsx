@@ -73,7 +73,23 @@ export default function CapturePage() {
   useEffect(() => {
     startCamera(); // eslint-disable-line react-hooks/set-state-in-effect -- initializing camera on mount
 
+    // Stop camera when page is hidden (phone lock / app switch) to save battery,
+    // restart when the page becomes visible again.
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((t) => t.stop());
+          streamRef.current = null;
+          setCameraReady(false);
+        }
+      } else {
+        startCamera();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
