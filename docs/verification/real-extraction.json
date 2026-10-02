@@ -1,0 +1,392 @@
+{
+  "summary": {
+    "ranAt": "2026-10-02T11:25:24.404Z",
+    "base": "http://localhost:3217",
+    "imagesOk": 8,
+    "fieldAccuracy": "48/48",
+    "fieldAccuracyClean": "30/30",
+    "fieldAccuracyHard": "18/18",
+    "extractCostTotalUsd": 0.0044870000000000005,
+    "extractCostAvgUsd": 0.0005608750000000001,
+    "extractAvgMs": 1405,
+    "totalSpendUsd": 0.004553333600000001
+  },
+  "results": [
+    {
+      "file": "badge-priya.jpg",
+      "ok": true,
+      "ms": 1575,
+      "costUsd": 0.0005335,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "Badge: Attendee",
+        "website": ""
+      },
+      "fields": {
+        "firstName": {
+          "want": "Priya",
+          "got": "Priya",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Raghunathan",
+          "got": "Raghunathan",
+          "ok": true
+        },
+        "title": {
+          "want": "Director, Field Marketing",
+          "got": "Director, Field Marketing",
+          "ok": true
+        },
+        "company": {
+          "want": "Northwind Analytics",
+          "got": "Northwind Analytics",
+          "ok": true
+        },
+        "email": {
+          "want": "",
+          "got": "",
+          "ok": true
+        },
+        "phone": {
+          "want": "",
+          "got": "",
+          "ok": true
+        }
+      }
+    },
+    {
+      "file": "card-marcus.jpg",
+      "ok": true,
+      "ms": 1961,
+      "costUsd": 0.00061,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "88 Harbor Street, Suite 400, Oakland, CA 94607",
+        "website": "halcyonfreight.example"
+      },
+      "fields": {
+        "firstName": {
+          "want": "Marcus",
+          "got": "Marcus",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Delacroix-Bell",
+          "got": "Delacroix-Bell",
+          "ok": true
+        },
+        "title": {
+          "want": "VP, Partnerships",
+          "got": "VP, Partnerships",
+          "ok": true
+        },
+        "company": {
+          "want": "Halcyon Freight Systems",
+          "got": "Halcyon Freight Systems",
+          "ok": true
+        },
+        "email": {
+          "want": "marcus.bell@halcyonfreight.example",
+          "got": "marcus.bell@halcyonfreight.example",
+          "ok": true
+        },
+        "phone": {
+          "want": "+1 (415) 555-0142",
+          "got": "+1 (415) 555-0142",
+          "ok": true
+        }
+      }
+    },
+    {
+      "file": "badge-zoe.jpg",
+      "ok": true,
+      "ms": 1209,
+      "costUsd": 0.000532,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "Badge: Exhibitor",
+        "website": ""
+      },
+      "fields": {
+        "firstName": {
+          "want": "Zoë",
+          "got": "Zoë",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Müller-Ålesund",
+          "got": "Müller-Ålesund",
+          "ok": true
+        },
+        "title": {
+          "want": "",
+          "got": "",
+          "ok": true
+        },
+        "company": {
+          "want": "Birchwood & Finch",
+          "got": "Birchwood & Finch",
+          "ok": true
+        },
+        "email": {
+          "want": "",
+          "got": "",
+          "ok": true
+        },
+        "phone": {
+          "want": "",
+          "got": "",
+          "ok": true
+        }
+      }
+    },
+    {
+      "file": "card-soren.jpg",
+      "ok": true,
+      "ms": 1299,
+      "costUsd": 0.0005665,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "",
+        "website": ""
+      },
+      "fields": {
+        "firstName": {
+          "want": "Søren",
+          "got": "Søren",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Ødegård-Lindqvist",
+          "got": "Ødegård-Lindqvist",
+          "ok": true
+        },
+        "title": {
+          "want": "Chief Medical Officer",
+          "got": "Chief Medical Officer",
+          "ok": true
+        },
+        "company": {
+          "want": "Lumen Care Collective",
+          "got": "Lumen Care Collective",
+          "ok": true
+        },
+        "email": {
+          "want": "soren@lumencare.example",
+          "got": "soren@lumencare.example",
+          "ok": true
+        },
+        "phone": {
+          "want": "+46 8 555 01 77",
+          "got": "+46 8 555 01 77",
+          "ok": true
+        }
+      }
+    },
+    {
+      "file": "badge-ayodele.jpg",
+      "ok": true,
+      "ms": 1315,
+      "costUsd": 0.0005395,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "Badge: Speaker",
+        "website": ""
+      },
+      "fields": {
+        "firstName": {
+          "want": "Ayodele",
+          "got": "Ayodele",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Okonkwo-Reyes",
+          "got": "Okonkwo-Reyes",
+          "ok": true
+        },
+        "title": {
+          "want": "Head of Events",
+          "got": "Head of Events",
+          "ok": true
+        },
+        "company": {
+          "want": "Cobalt & Quill Media",
+          "got": "Cobalt & Quill Media",
+          "ok": true
+        },
+        "email": {
+          "want": "",
+          "got": "",
+          "ok": true
+        },
+        "phone": {
+          "want": "",
+          "got": "",
+          "ok": true
+        }
+      }
+    },
+    {
+      "file": "hard-badge-dim.jpg",
+      "ok": true,
+      "ms": 1154,
+      "costUsd": 0.0005395,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "Badge: Exhibitor",
+        "website": ""
+      },
+      "fields": {
+        "firstName": {
+          "want": "Imani",
+          "got": "Imani",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Whitfield-Osei",
+          "got": "Whitfield-Osei",
+          "ok": true
+        },
+        "title": {
+          "want": "Sr. Manager, Partner Programs",
+          "got": "Sr. Manager, Partner Programs",
+          "ok": true
+        },
+        "company": {
+          "want": "Tidewater Robotics",
+          "got": "Tidewater Robotics",
+          "ok": true
+        },
+        "email": {
+          "want": "",
+          "got": "",
+          "ok": true
+        },
+        "phone": {
+          "want": "",
+          "got": "",
+          "ok": true
+        }
+      }
+    },
+    {
+      "file": "hard-card-busy.jpg",
+      "ok": true,
+      "ms": 1469,
+      "costUsd": 0.0006325,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "14 Cheapside, London EC2V 6DN, United Kingdom; in/rafaelng-demo",
+        "website": "www.marlowepryce.example"
+      },
+      "fields": {
+        "firstName": {
+          "want": "Rafael",
+          "got": "Rafael",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Quintanilla-Ng",
+          "got": "Quintanilla-Ng",
+          "ok": true
+        },
+        "title": {
+          "want": "Senior Vice President, Global Customer Success",
+          "got": "Senior Vice President, Global Customer Success",
+          "ok": true
+        },
+        "company": {
+          "want": "Marlowe & Pryce Advisory",
+          "got": "Marlowe & Pryce Advisory",
+          "ok": true
+        },
+        "email": {
+          "want": "rafael.ng@marlowepryce.example",
+          "got": "rafael.ng@marlowepryce.example",
+          "ok": true
+        },
+        "phone": {
+          "want": "+44 20 7946 0958",
+          "got": "+44 20 7946 0958",
+          "ok": true
+        }
+      }
+    },
+    {
+      "file": "hard-badge-lowres.jpg",
+      "ok": true,
+      "ms": 1261,
+      "costUsd": 0.0005335,
+      "correct": 6,
+      "total": 6,
+      "confidence": 1,
+      "extra": {
+        "notes": "Badge: VIP",
+        "website": ""
+      },
+      "fields": {
+        "firstName": {
+          "want": "Nikolai",
+          "got": "Nikolai",
+          "ok": true
+        },
+        "lastName": {
+          "want": "Sørensen",
+          "got": "Sørensen",
+          "ok": true
+        },
+        "title": {
+          "want": "Head of Field Events",
+          "got": "Head of Field Events",
+          "ok": true
+        },
+        "company": {
+          "want": "Verdant Grid",
+          "got": "Verdant Grid",
+          "ok": true
+        },
+        "email": {
+          "want": "",
+          "got": "",
+          "ok": true
+        },
+        "phone": {
+          "want": "",
+          "got": "",
+          "ok": true
+        }
+      }
+    }
+  ],
+  "voice": [
+    {
+      "file": "voice-note.m4a",
+      "ok": true,
+      "ms": 1866,
+      "costUsd": 0.0000332334,
+      "text": "Great conversation. They are planning a big field marketing push in Q1 and want a demo next week.  Follow up with Dana from Procurement and send the case study. Hot lead."
+    },
+    {
+      "file": "voice-note.webm",
+      "ok": true,
+      "ms": 1134,
+      "costUsd": 0.0000331002,
+      "text": "Great conversation. They are planning a big field marketing push in Q1 and want a demo next week.  Follow up with Dana from Procurement and send a case study. Hot lead."
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "badge-priya.jpg": {
+    "firstName": "Priya",
+    "lastName": "Raghunathan",
+    "title": "Director, Field Marketing",
+    "company": "Northwind Analytics",
+    "email": "",
+    "phone": ""
+  },
+  "card-marcus.jpg": {
+    "firstName": "Marcus",
+    "lastName": "Delacroix-Bell",
+    "title": "VP, Partnerships",
+    "company": "Halcyon Freight Systems",
+    "email": "marcus.bell@halcyonfreight.example",
+    "phone": "+1 (415) 555-0142"
+  },
+  "badge-zoe.jpg": {
+    "firstName": "Zoë",
+    "lastName": "Müller-Ålesund",
+    "title": "",
+    "company": "Birchwood & Finch",
+    "email": "",
+    "phone": ""
+  },
+  "card-soren.jpg": {
+    "firstName": "Søren",
+    "lastName": "Ødegård-Lindqvist",
+    "title": "Chief Medical Officer",
+    "company": "Lumen Care Collective",
+    "email": "soren@lumencare.example",
+    "phone": "+46 8 555 01 77"
+  },
+  "badge-ayodele.jpg": {
+    "firstName": "Ayodele",
+    "lastName": "Okonkwo-Reyes",
+    "title": "Head of Events",
+    "company": "Cobalt & Quill Media",
+    "email": "",
+    "phone": ""
+  },
+  "hard-badge-dim.jpg": {
+    "firstName": "Imani",
+    "lastName": "Whitfield-Osei",
+    "title": "Sr. Manager, Partner Programs",
+    "company": "Tidewater Robotics",
+    "email": "",
+    "phone": ""
+  },
+  "hard-card-busy.jpg": {
+    "firstName": "Rafael",
+    "lastName": "Quintanilla-Ng",
+    "title": "Senior Vice President, Global Customer Success",
+    "company": "Marlowe & Pryce Advisory",
+    "email": "rafael.ng@marlowepryce.example",
+    "phone": "+44 20 7946 0958"
+  },
+  "hard-badge-lowres.jpg": {
+    "firstName": "Nikolai",
+    "lastName": "Sørensen",
+    "title": "Head of Field Events",
+    "company": "Verdant Grid",
+    "email": "",
+    "phone": ""
+  }
+}
